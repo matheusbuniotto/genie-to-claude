@@ -1,0 +1,66 @@
+# Example serialized Genie space (the shape `databricks api get /api/2.0/genie/spaces/{id}
+# ?include_serialized_space=true` returns, and what a bundle's .geniespace.json holds).
+# Feed this to migrate_genie.py to see what it produces.
+config:
+  name: Orders & Revenue
+  description: Marketplace order and revenue questions for the growth and finance teams.
+  warehouse_id: abc123def456
+  sample_questions:
+    - What was net revenue last month?
+    - How many orders did we get by channel this quarter?
+    - Which product categories drove the most revenue in June?
+
+data_sources:
+  tables:
+    - identifier: analytics.core.fact_orders
+      description: One row per order. All marketplaces, 2021-01-01 onward. Includes test
+        and cancelled orders — filter them out.
+      column_configs:
+        - name: channel_code
+          enable_entity_matching: true
+          synonyms: [channel, platform, surface]
+        - name: net_revenue_brl
+          synonyms: [revenue, net revenue]
+    - identifier: analytics.core.fact_order_items
+      description: One row per SKU per order. Use for product and category cuts only —
+        item revenue excludes shipping.
+  metric_views:
+    - identifier: analytics.core.revenue_metrics
+      measures: [net_revenue, gmv, orders, aov, refund_rate]
+      dimensions: [order_date, channel_code, country_iso2, customer_segment]
+
+instructions:
+  text: |
+    Always exclude test and fraud-blocked orders: is_test = false AND order_status NOT
+    IN ('cancelled', 'fraud_blocked').
+    "Last month" means the last complete calendar month, never trailing 30 days.
+    net_revenue_brl is already refund-adjusted — never subtract refunds again.
+    Revenue for the trailing 14 days is provisional because refunds arrive late.
+    Never mix _brl and _usd columns in one series; they use different FX conventions.
+  sql_snippets:
+    - display_name: Active customers
+      sql: COUNT(DISTINCT customer_id)
+      synonyms: [active customers, actives]
+      instruction: Count accounts, not users. COUNT(DISTINCT user_id) inflates B2B by ~1.7x.
+    - display_name: Hygiene filter
+      sql: is_test = false AND order_status NOT IN ('cancelled', 'fraud_blocked')
+      synonyms: [valid orders, clean orders]
+      instruction: Apply to every query against fact_orders or fact_order_items.
+  sql_functions:
+    - analytics.core.f_orders_in_window(start_date DATE, end_date DATE)
+
+benchmarks:
+  - question: What was net revenue last month?
+    answer:
+      - format: SQL
+        content:
+          - "SELECT SUM(net_revenue_brl) FROM analytics.core.fact_orders WHERE is_test =
+            false AND order_status NOT IN ('cancelled','fraud_blocked') AND order_date
+            BETWEEN DATE '2026-06-01' AND DATE '2026-06-30'"
+  - question: How many orders did we get by channel in Q1 2026?
+    answer:
+      - format: SQL
+        content:
+          - "SELECT channel_code, COUNT(DISTINCT order_id) FROM analytics.core.fact_orders
+            WHERE is_test = false AND order_status NOT IN ('cancelled','fraud_blocked')
+            AND order_date BETWEEN DATE '2026-01-01' AND DATE '2026-03-31' GROUP BY 1"

@@ -1,0 +1,18 @@
+# Example Databricks Asset Bundle declaring a Genie space — the other shape the
+# migrator accepts. The space definition itself lives in the file `file_path` points at
+# (normally a .geniespace.json; any YAML/JSON the migrator understands works).
+#
+#   uv run migrate_genie.py analytics/examples/databricks.yml --domain orders
+#   uv run migrate_genie.py analytics/examples/databricks.yml --space orders_space
+bundle:
+  name: analytics_spaces
+
+resources:
+  genie_spaces:
+    orders_space:
+      title: Orders & Revenue
+      warehouse_id: abc123def456
+      file_path: ./orders.genie_space.yml
+      permissions:
+        - level: CAN_RUN
+          group_name: analysts

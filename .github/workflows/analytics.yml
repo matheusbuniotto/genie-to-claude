@@ -1,0 +1,78 @@
+# The cheap gate: everything that can be verified without a warehouse or a model call.
+#
+# Two tiers, deliberately. This workflow runs on every PR in about a minute and catches
+# doc rot. It does NOT tell you the agent is accurate — only `run_evals.py` does that, and
+# that needs an API key and real money, so it runs on demand (see the eval job below).
+name: analytics
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_evals:
+        description: "Also run the offline eval suite (costs API tokens)"
+        type: boolean
+        default: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      # Rebuilds the fixture warehouse AND asserts every numeric claim in the reference
+      # docs against it. A doc that says "the hygiene filter is worth ~5% of GMV" fails
+      # the build the day it stops being true.
+      - name: Seed fixture warehouse and verify doc claims
+        run: python3 analytics/fixtures/seed.py
+
+      - name: Repo invariants (evals well-formed, docs registered, links resolve)
+        run: python3 analytics-marketplace/analytics-workbench/scripts/check.py
+
+      - name: Script selftests
+        run: |
+          S=analytics-marketplace/analytics-workbench/scripts
+          python3 $S/check.py --selftest
+          python3 $S/run_evals.py --selftest
+          python3 analytics-marketplace/analytics-workbench/hooks/doc_drift.py --selftest
+
+      - name: Genie migrator selftest
+        run: |
+          pipx install uv || pip install uv
+          uv run analytics-marketplace/analytics-workbench/scripts/migrate_genie.py --selftest
+
+      - name: Plugin manifests are valid JSON
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys
+          for p in pathlib.Path("analytics-marketplace").rglob("*.json"):
+              json.load(open(p)); print("ok", p)
+          PY
+
+  # Costs real tokens, so it never runs automatically. Trigger from the Actions tab, or
+  # wire it to a label if you want it on eval-affecting PRs.
+  evals:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_evals
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: python3 analytics/fixtures/seed.py
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Run offline evals
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 analytics-marketplace/analytics-workbench/scripts/run_evals.py
+      # Results are telemetry, not a test log — keep the history so "did that change
+      # help?" stays a query rather than a memory.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-results
+          path: analytics/evals/results.jsonl

@@ -1,0 +1,8 @@
+{
+  "name": "analytics-workbench",
+  "displayName": "Analytics Workbench",
+  "version": "0.1.0",
+  "description": "For the data team: QA an analysis, author and maintain the reference docs the agent retrieves, run and ablate the offline eval suite, and migrate Databricks Genie spaces into it.",
+  "author": { "name": "Matheus Buniotto" },
+  "keywords": ["analytics", "evals", "data-quality", "genie", "databricks"]
+}

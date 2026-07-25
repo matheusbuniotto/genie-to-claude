@@ -1,0 +1,77 @@
+{
+  "_comment": "Genie serialized_space v2 — the shape `databricks api get /api/2.0/genie/spaces/{id}?include_serialized_space=true` actually returns. Note that every scalar is wrapped in a list, and the key names differ from the bundle examples: text_instructions (not text), example_question_sqls (not benchmarks), column_name (not name).",
+  "version": 2,
+  "config": {
+    "name": "Orders & Revenue",
+    "description": ["Marketplace order and revenue questions for growth and finance."],
+    "sample_questions": [
+      {
+        "id": "a1b2c3d4e5f60000000000000000000a",
+        "question": ["What was net revenue last month?"]
+      },
+      {
+        "id": "a1b2c3d4e5f60000000000000000000b",
+        "question": ["Which product categories drove the most revenue in June?"]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "analytics.core.fact_orders",
+        "description": [
+          "One row per order. All marketplaces, 2021-01-01 onward. Includes test and cancelled orders — filter them out."
+        ],
+        "column_configs": [
+          {
+            "column_name": "channel_code",
+            "description": ["Acquisition surface"],
+            "synonyms": ["channel", "platform", "surface"]
+          },
+          {
+            "column_name": "net_revenue_brl",
+            "description": ["Refund-adjusted revenue in BRL"],
+            "synonyms": ["revenue", "net revenue"]
+          }
+        ]
+      },
+      {
+        "identifier": "analytics.core.fact_order_items",
+        "description": [
+          "One row per SKU per order. Use for product and category cuts only — item revenue excludes shipping."
+        ]
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "01f0b37c378e1c9100000000000000a1",
+        "content": [
+          "Always exclude test and fraud-blocked orders: is_test = false AND order_status NOT IN ('cancelled', 'fraud_blocked')."
+        ]
+      },
+      {
+        "id": "01f0b37c378e1c9100000000000000a2",
+        "content": [
+          "\"Last month\" means the last complete calendar month, never trailing 30 days."
+        ]
+      },
+      {
+        "id": "01f0b37c378e1c9100000000000000a3",
+        "content": [
+          "net_revenue_brl is already refund-adjusted — never subtract refunds again."
+        ]
+      }
+    ],
+    "example_question_sqls": [
+      {
+        "id": "01f0821116d912db00000000000000b1",
+        "question": ["What was net revenue last month?"],
+        "sql": [
+          "SELECT SUM(net_revenue_brl) FROM analytics.core.fact_orders WHERE is_test = false AND order_status NOT IN ('cancelled','fraud_blocked') AND order_date BETWEEN DATE '2026-06-01' AND DATE '2026-06-30'"
+        ]
+      }
+    ]
+  }
+}

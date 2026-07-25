@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>CHEAT CODE — Playbook</title>
+<style>
+  :root{
+    --bg:#f2f0e9;
+    --fg:#0a0a0a;
+    --accent:#ff3b00;
+    --line:#0a0a0a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{
+    height:100%;
+    background:var(--bg);
+    color:var(--fg);
+    font-family:"Courier New", ui-monospace, monospace;
+    overflow:hidden;
+  }
+  .deck{
+    height:100vh;
+    width:100vw;
+    position:relative;
+  }
+  .slide{
+    position:absolute;
+    inset:0;
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    padding:6vw;
+    border:1.4vh solid var(--fg);
+  }
+  .slide.active{display:flex;}
+
+  .tag{
+    display:inline-block;
+    font-size:1.1rem;
+    letter-spacing:.3em;
+    text-transform:uppercase;
+    border:2px solid var(--fg);
+    padding:.3em .7em;
+    margin-bottom:2rem;
+    width:fit-content;
+  }
+  .tag.hit{background:var(--fg);color:var(--bg);}
+
+  h1{
+    font-size:clamp(2.5rem, 8vw, 7rem);
+    line-height:.95;
+    text-transform:uppercase;
+    letter-spacing:-.02em;
+  }
+  h2{
+    font-size:clamp(1.2rem, 2.6vw, 2rem);
+    text-transform:uppercase;
+    margin-top:1rem;
+    max-width:60ch;
+  }
+  .big-letter{
+    font-size:clamp(6rem, 22vw, 16rem);
+    line-height:.8;
+    font-weight:bold;
+    color:var(--accent);
+    -webkit-text-stroke:2px var(--fg);
+  }
+  .num{
+    position:absolute;
+    top:6vh;
+    right:6vw;
+    font-size:1.4rem;
+    letter-spacing:.2em;
+  }
+  ul, ol{
+    list-style:none;
+    margin-top:2rem;
+    max-width:70ch;
+  }
+  li{
+    font-size:clamp(1rem, 1.6vw, 1.4rem);
+    padding:.6em 0;
+    border-bottom:2px dashed var(--fg);
+  }
+  li:last-child{border-bottom:none;}
+  li b{background:var(--fg);color:var(--bg);padding:0 .2em;}
+  .meta{
+    margin-top:auto;
+    padding-top:2rem;
+    font-size:1rem;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    display:flex;
+    gap:2rem;
+    flex-wrap:wrap;
+  }
+  .meta span{border:1px solid var(--fg);padding:.2em .6em;}
+  .meta span.attack{color:var(--bg);background:var(--accent);border-color:var(--accent);}
+  .row{display:flex;gap:6vw;align-items:flex-start;height:100%;}
+  .col{flex:1;display:flex;flex-direction:column;justify-content:center;}
+  .grid9{
+    display:grid;
+    grid-template-columns:repeat(9,1fr);
+    gap:1vw;
+    margin-top:3rem;
+  }
+  .grid9 div{
+    border:2px solid var(--fg);
+    aspect-ratio:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:clamp(1.2rem,3vw,2.4rem);
+    font-weight:bold;
+  }
+  .grid9 div.on{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+  a{color:inherit;}
+  .src{
+    font-size:.95rem;
+    letter-spacing:.05em;
+    opacity:.75;
+    margin-top:.4rem;
+  }
+  .progress{
+    position:fixed;
+    bottom:0;left:0;
+    height:6px;
+    background:var(--accent);
+    z-index:10;
+    transition:width .15s linear;
+  }
+  .hint{
+    position:fixed;
+    bottom:1.6vh;
+    right:2vw;
+    font-size:.85rem;
+    letter-spacing:.15em;
+    opacity:.6;
+    z-index:10;
+  }
+  .checklist li::before{content:"[ ] "; font-weight:bold;}
+  code{background:var(--fg);color:var(--bg);padding:0 .3em;}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- 0 TITLE -->
+  <section class="slide active">
+    <span class="tag hit">Playbook</span>
+    <h1>CHEAT<br>CODE</h1>
+    <h2>Framework de 9 passos para agentes de analytics / coding com Claude</h2>
+    <div class="meta">
+      <span>Baseado em: Anthropic — self-service data analytics</span>
+      <span>PT-BR</span>
+    </div>
+  </section>
+
+  <!-- 1 PROBLEM -->
+  <section class="slide">
+    <span class="tag">O problema</span>
+    <h1>NÃO É CODEGEN.<br>É CONTEXTO.</h1>
+    <ul>
+      <li>Analytics tem <b>uma</b> resposta certa, de <b>uma</b> fonte certa — sem forma determinística de provar acerto depois.</li>
+      <li>O gargalo real: mapear a pergunta do usuário para a entidade certa e <b>atualizada</b> no modelo de dados.</li>
+      <li>Resolvido isso, o SQL vira trivial.</li>
+    </ul>
+    <div class="meta"><span>Fonte: 01-failure-modes.md</span></div>
+  </section>
+
+  <!-- 2 THREE FAILURES -->
+  <section class="slide">
+    <span class="tag">3 modos de falha</span>
+    <div class="row">
+      <div class="col">
+        <h1 style="font-size:clamp(2rem,5vw,3.5rem)">AMBIGUIDADE</h1>
+        <p class="src">centenas de campos plausíveis, agente escolhe errado</p>
+      </div>
+      <div class="col">
+        <h1 style="font-size:clamp(2rem,5vw,3.5rem)">OBSOLÊNCIA</h1>
+        <p class="src">schemas e docs mudam, conhecimento apodrece</p>
+      </div>
+      <div class="col">
+        <h1 style="font-size:clamp(2rem,5vw,3.5rem)">RETRIEVAL</h1>
+        <p class="src">a info existe, mas o espaço de busca é grande demais</p>
+      </div>
+    </div>
+    <div class="meta"><span>Todo o framework abaixo ataca só isso três</span></div>
+  </section>
+
+  <!-- 3 OVERVIEW GRID -->
+  <section class="slide">
+    <span class="tag">O acrônimo</span>
+    <h1 style="font-size:clamp(2rem,6vw,4.5rem)">C&nbsp;H&nbsp;E&nbsp;A&nbsp;T&nbsp;C&nbsp;O&nbsp;D&nbsp;E</h1>
+    <div class="grid9" id="overviewGrid">
+      <div>C</div><div>H</div><div>E</div><div>A</div><div>T</div><div>C</div><div>O</div><div>D</div><div>E</div>
+    </div>
+    <div class="meta">
+      <span>9 passos</span><span>9 arquivos-fonte</span><span>1 loop fechado</span>
+    </div>
+  </section>
+
+  <!-- STEP TEMPLATE SLIDES 4-12 -->
+
+  <!-- STEP 1 -->
+  <section class="slide" data-step="1">
+    <span class="num">01 / 09</span>
+    <div class="row">
+      <div class="big-letter" style="flex:0 0 auto;">C</div>
+      <div class="col">
+        <h1 style="font-size:clamp(1.8rem,4vw,3rem)">CANONIZAR OS DADOS</h1>
+        <ul>
+          <li>Um dataset canônico por conceito de negócio — deprecie os quase-duplicados.</li>
+          <li>Rollups/caches <b>derivam</b> do canônico, não vivem como alternativa.</li>
+          <li>Agente busca conceito → acha <b>uma</b> resposta governada, não 40.</li>
+        </ul>
+        <div class="meta">
+          <span class="attack">Ataca: ambiguidade</span>
+          <span>Fonte: 02-data-foundations.md</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="slide" data-step="2">
+    <span class="num">02 / 09</span>
+    <div class="row">
+      <div class="big-letter" style="flex:0 0 auto;">H</div>
+      <div class="col">
+        <h1 style="font-size:clamp(1.8rem,4vw,3rem)">HIERARQUIZAR FONTES DE VERDADE</h1>
+        <ol>
+          <li>1. Semantic layer — sempre primeiro</li>
+          <li>2. Lineage / grafo de transformação</li>
+          <li>3. Corpus de queries — só destilado, nunca cru</li>
+          <li>4. Contexto de negócio — a camada mais negligenciada</li>
+        </ol>
+        <div class="meta">
+          <span class="attack">Ataca: ambiguidade</span>
+          <span>Fonte: 03-sources-of-truth.md</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="slide" data-step="3">
+    <span class="num">03 / 09</span>
+    <div class="row">
+      <div class="big-letter" style="flex:0 0 auto;">E</div>
+      <div class="col">
+        <h1 style="font-size:clamp(1.8rem,4vw,3rem)">ENFORCE VIA CI / TOOLING / MANDATO</h1>
+        <ul>
+          <li><b>Tooling</b>: agente roteado pro canônico primeiro.</li>
+          <li><b>CI</b>: mudança que ignora o canônico falha o review.</li>
+          <li><b>Mandato</b>: time downstream usa a camada governada ou justifica.</li>
+        </ul>
+        <div class="meta">
+          <span class="attack">Ataca: obsolência</span>
+          <span>Fonte: 02-data-foundations.md</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="slide" data-step="4">
+    <span class="num">04 / 09</span>
+    <div class="row">
+      <div class="big-letter" style="flex:0 0 auto;">A</div>
+      <div class="col">
+        <h1 style="font-size:clamp(1.8rem,4vw,3rem)">ARQUITETAR SKILLS EM PARES</h1>
+        <ul>
+          <li>Sem skills: acurácia ≤ 21%. Com skills: &gt; 95%.</li>
+          <li><b>Conhecimento</b>: router fino → semantic layer ou ~30 refs do domínio.</li>
+          <li><b>Runbook</b>: clarifica → busca → query → revisão adversarial.</li>
+        </ul>
+        <div class="meta">
+          <span class="attack">Ataca: retrieval</span>
+          <span>Fonte: 04-skills.md</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="slide" data-step="5">
+    <span class="num">05 / 09</span>
+    <div class="row">
+      <div class="big-letter" style="flex:0 0 auto;">T</div>
+      <div class="col">
+        <h1 style="font-size:clamp(1.8rem,4vw,3rem)">TESTAR OFFLINE COM EVALS</h1>
+        <ul>
+          <li>Evals dashboard-based + long-tail + correções de stakeholder.</li>
+          <li>Ground truth ancorado (snapshot de data), resultado salvo como <b>telemetria</b>.</li>
+          <li>Gate de lançamento por domínio: threshold antes de liberar (~90%+).</li>
+        </ul>
+        <div class="meta">
+          <span class="attack">Ataca: todas — detecção</span>
+          <span>Fonte: 05-validation.md</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 6 -->
+  <section class="slide" data-step="6">
+    <span class="num">06 / 09</span>
+    <div class="row">
+      <div class="big-letter" style="flex:0 0 auto;">C</div>
+      <div class="col">
+        <h1 style="font-size:clamp(1.8rem,4vw,3rem)">COMPARAR VIA ABLAÇÃO</h1>
+        <ul>
+          <li>Uma variável por vez, eval set fixo.</li>
+          <li>Desenhe pra <b>resultado nulo</b>: acesso bruto a milhares de SQLs moveu acurácia &lt;1pt — o gargalo era estrutura, não acesso.</li>
+          <li>Registre o que não funcionou. É barato e evita repetir o experimento.</li>
+        </ul>
+        <div class="meta">
+          <span class="attack">Ataca: todas — isolamento de causa</span>
+          <span>Fonte: 05-validation.md</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 7 -->
+  <section class="slide" data-step="7">
+    <span class="num">07 / 09</span>
+    <div class="row">
+      <div class="big-letter" style="flex:0 0 auto;">O</div>
+      <div class="col">
+        <h1 style="font-size:clamp(1.8rem,4vw,3rem)">OBSERVAR EM PRODUÇÃO</h1>
+        <ul>
+          <li>Revisão adversarial: +6% acurácia / +32% tokens / +72% latência.</li>
+          <li>Rodapé de proveniência em toda resposta: fonte, freshness, dono.</li>
+          <li>Falha <b>silenciosa</b> ainda sem solução robusta — mitigue, não confie.</li>
+        </ul>
+        <div class="meta">
+          <span class="attack">Ataca: falha silenciosa</span>
+          <span>Fonte: 05-validation.md</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 8 -->
+  <section class="slide" data-step="8">
+    <span class="num">08 / 09</span>
+    <div class="row">
+      <div class="big-letter" style="flex:0 0 auto;">D</div>
+      <div class="col">
+        <h1 style="font-size:clamp(1.8rem,4vw,3rem)">DOCUMENTAR COMO CÓDIGO</h1>
+        <ul>
+          <li>Sem manutenção ativa: acurácia caiu de ~95% pra ~65% em 1 mês.</li>
+          <li>Skill markdown no mesmo repo do modelo — mesmo PR atualiza os dois.</li>
+          <li>Hook de review sinaliza modelo mudado sem skill atualizada.</li>
+        </ul>
+        <div class="meta">
+          <span class="attack">Ataca: obsolência</span>
+          <span>Fonte: 04-skills.md</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 9 -->
+  <section class="slide" data-step="9">
+    <span class="num">09 / 09</span>
+    <div class="row">
+      <div class="big-letter" style="flex:0 0 auto;">E</div>
+      <div class="col">
+        <h1 style="font-size:clamp(1.8rem,4vw,3rem)">EVOLUIR COM CORREÇÃO ATIVA</h1>
+        <ul>
+          <li>Agente varre canais, detecta correção, abre PR de doc pro dono do domínio.</li>
+          <li>Caminho deliberadamente chato: editar markdown → merge → auto-sync.</li>
+          <li>Toda correção realimenta o passo 5 (evals). Loop fechado.</li>
+        </ul>
+        <div class="meta">
+          <span class="attack">Ataca: todas — loop fechado</span>
+          <span>Fonte: 05-validation.md</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHECKLIST -->
+  <section class="slide">
+    <span class="tag">Começar</span>
+    <h1 style="font-size:clamp(2rem,5vw,3.5rem)">MÍNIMO VIÁVEL</h1>
+    <ul class="checklist">
+      <li>Um punhado de datasets canônicos <span class="src">— passo 1</span></li>
+      <li>Dezenas de evals offline <span class="src">— passo 5</span></li>
+      <li>Uma skill de conhecimento fina <span class="src">— passo 4</span></li>
+      <li style="opacity:.5">Depois: enforcement, ablação, observabilidade, correção ativa</li>
+    </ul>
+    <div class="meta"><span>Fonte: 06-getting-started.md</span></div>
+  </section>
+
+  <!-- REFERENCES -->
+  <section class="slide">
+    <span class="tag hit">Fontes</span>
+    <h1 style="font-size:clamp(2rem,5vw,3.5rem)">REFERÊNCIAS</h1>
+    <ul>
+      <li>Artigo original: How Anthropic enables self-service data analytics with Claude — claude.com/blog</li>
+      <li>Cópia completa: ../how-anthropic-enables-self-service-data-analytics-with-claude.md</li>
+      <li>Notas: index.md · 01-failure-modes.md · 02-data-foundations.md · 03-sources-of-truth.md</li>
+      <li>Notas: 04-skills.md · 05-validation.md · 06-getting-started.md · playbook.md</li>
+    </ul>
+  </section>
+
+</div>
+
+<div class="progress" id="progress"></div>
+<div class="hint">← → / SPACE / CLICK</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  let i = 0;
+  const progress = document.getElementById('progress');
+
+  function render(){
+    slides.forEach((s,idx)=>s.classList.toggle('active', idx===i));
+    progress.style.width = ((i+1)/slides.length*100) + '%';
+    const grid = document.getElementById('overviewGrid');
+    if(grid){
+      Array.from(grid.children).forEach((c,idx)=>{
+        c.classList.toggle('on', idx < i);
+      });
+    }
+  }
+  function next(){ i = Math.min(i+1, slides.length-1); render(); }
+  function prev(){ i = Math.max(i-1, 0); render(); }
+
+  window.addEventListener('keydown', e=>{
+    if(['ArrowRight','ArrowDown',' ','PageDown'].includes(e.key)){ next(); e.preventDefault(); }
+    if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){ prev(); e.preventDefault(); }
+    if(e.key==='Home'){ i=0; render(); }
+    if(e.key==='End'){ i=slides.length-1; render(); }
+  });
+  document.getElementById('deck').addEventListener('click', e=>{
+    const w = window.innerWidth;
+    if(e.clientX > w/2) next(); else prev();
+  });
+
+  render();
+</script>
+
+</body>
+</html>

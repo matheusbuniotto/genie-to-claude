@@ -1,0 +1,8 @@
+{
+  "name": "analytics-desk",
+  "displayName": "Analytics Desk",
+  "version": "0.1.0",
+  "description": "Ask the warehouse questions in plain language. Routes through the governed metric layer first, reviews its own SQL adversarially, and answers with a provenance footer.",
+  "author": { "name": "Matheus Buniotto" },
+  "keywords": ["analytics", "sql", "self-service", "business-intelligence"]
+}
