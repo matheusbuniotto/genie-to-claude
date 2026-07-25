@@ -1,7 +1,7 @@
 ---
 name: reference-doc
 version: 0.1.0
-description: "IF you are writing, reviewing, or fixing a domain reference doc in analytics/references/ — or a data-model change needs its doc updated, or an eval failure traces back to a missing gotcha — THEN invoke this skill. DO NOT invoke for writing SQL or answering data questions."
+description: "IF you are writing, reviewing, or fixing a domain reference doc — or a data-model change needs its doc updated, or an eval failure traces back to a missing gotcha — THEN invoke this skill. DO NOT invoke for writing SQL or answering data questions."
 ---
 
 # Authoring reference docs
@@ -16,8 +16,9 @@ rot: unmaintained, accuracy drifts from ~95% to ~65% in about a month.
 
 ## Rules
 
-- **One doc per business domain**, named for the domain: `analytics/references/orders.md`.
-  A few dozen docs is the expected steady state.
+- **One doc per business domain**, named for the domain: `analytics/references/orders.md`
+  — or wherever `CLAUDE.md` says the project keeps them. A few dozen docs is the expected
+  steady state.
 - **Every doc is registered** in `analytics/references/INDEX.md` with a "use for" and a
   "do NOT use for". The INDEX is the router; an unregistered doc is invisible.
 - **Describe, don't prescribe.** Grain, scope, exclusions, join keys, required filters,
@@ -97,7 +98,7 @@ Omitting the section reads as "tier 1 was forgotten" and starts the agent at tie
 **Gotchas** — each entry names the mechanism, not just the rule. "`net_revenue_brl` is
 already refund-adjusted; subtracting `fact_refunds` double-counts" beats "don't subtract
 refunds". Prime sources: every stakeholder correction, every eval failure, every
-`DOC GAP` line from `analysis-qa`.
+`DOC GAP` line from `analysis-reviewer`.
 
 **Cross-References** — where the neighbouring question goes. Cheap to write, and it stops
 the agent from answering a question the doc doesn't own.

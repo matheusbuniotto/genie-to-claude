@@ -5,7 +5,7 @@
     python3 run_evals.py --filter orders-00   # one slice, for an ablation
     python3 run_evals.py --selftest           # check the grader, call no model
     python3 run_evals.py --agent-cmd ./my-bot # eval a different agent on the same set
-    python3 run_evals.py --gold-cmd 'sqlite3 analytics/fixtures/warehouse.db'
+    python3 run_evals.py --gold-cmd 'bq query --format=csv'   # number parity
 
 Run from the repo root. Grades the agent's *query and reasoning text*, not its number,
 so evals don't go stale when the underlying data moves. Results append to

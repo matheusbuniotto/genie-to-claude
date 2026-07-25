@@ -1,5 +1,5 @@
 ---
-description: Bootstrap a new domain — reference doc, INDEX entry, and a starter eval set.
+description: Document a new business domain — a reference doc written from the real tables, its router entry, and a starter eval set.
 argument-hint: [domain name, e.g. marketing]
 ---
 

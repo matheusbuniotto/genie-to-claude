@@ -1,6 +1,6 @@
 ---
-description: Run the offline eval suite (or one slice) and report pass rate, failures, and what to fix. Add "parity" to check numbers against gold SQL.
-argument-hint: [optional id regex, e.g. ^orders- ] [parity]
+description: Measure how accurate the agent is on your eval set, and report what to fix. Add "parity" to also check its numbers against each case's gold SQL.
+argument-hint: [optional slice, e.g. ^orders-] [parity]
 allowed-tools: Bash, Read, Edit, Glob, Grep
 ---
 

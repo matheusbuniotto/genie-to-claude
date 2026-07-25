@@ -1,6 +1,6 @@
 ---
-name: analysis-qa
-description: Reviews a *finished* analysis — question, method, query, numbers, and the claims made about them — before it reaches a stakeholder. Use when a data analyst asks for QA, a second pair of eyes, or sign-off. Broader than sql-reviewer, which only reviews the query.
+name: analysis-reviewer
+description: Reviews a *finished* analysis before it reaches a stakeholder — the question it answers, the method, the query, the numbers, and the claims made about them. Use when someone asks for a second pair of eyes or sign-off on an analysis. Broader than sql-reviewer, which only reviews the query itself.
 tools: Read, Grep, Glob, Bash
 ---
 

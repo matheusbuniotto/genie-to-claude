@@ -10,8 +10,8 @@ An analytics agent with no eval suite has unknown accuracy, and unknown accuracy
 system whose users can't check the answer is the actual risk. Evals are how you find out
 which failure mode — ambiguity, staleness, retrieval — is still leaking.
 
-Eval sets live in `analytics/evals/<domain>.jsonl`. The runner is
-`${CLAUDE_PLUGIN_ROOT}/scripts/run_evals.py`.
+Eval sets live in `analytics/evals/<domain>.jsonl` — or wherever `CLAUDE.md` says, if the
+project uses different paths. The runner is `${CLAUDE_PLUGIN_ROOT}/scripts/run_evals.py`.
 
 ## Case format
 
@@ -32,9 +32,13 @@ grading never diffs numbers. `--gold-cmd` promotes it to an assertion — see be
 ## Number parity (migrations)
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/run_evals.py --filter '^orders_genie-' \
-  --gold-cmd 'sqlite3 analytics/fixtures/warehouse.db'
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/run_evals.py --filter '^<domain>-' \
+  --gold-cmd '<a command that runs SQL from stdin>'   # --keep-qualified for a real warehouse
 ```
+
+Take the command from the connection ladder in `CLAUDE.md` — the warehouse CLI the project
+already uses (`databricks sql query …`, `bq query`, `snowsql -q`, `psql -c`), or a local
+fixture database if the project keeps one.
 
 Every case carrying `gold_sql` has that SQL executed, and the agent's answer must state
 the numbers it returned (0.5% tolerance, rates matched at either scale). Failures print
@@ -101,14 +105,15 @@ one-canonical-repo-synced-everywhere exists to prevent.
 docs registered in the router, links resolve, doc claims still true against the fixture)
 costs nothing and runs on every PR. The eval suite costs tokens, so it runs on demand or
 on eval-affecting PRs. Collapsing them into one job means either the cheap checks don't
-run often enough or the expensive ones bankrupt you. See `.github/workflows/analytics.yml`.
+run often enough or the expensive ones bankrupt you.
 
 **Give the suite a warehouse it can reach.** Evals that need production credentials only
 run where those credentials exist, which in practice means they stop running. A seeded
 fixture warehouse — small, deterministic, containing every gotcha the docs describe — lets
 the suite run offline and in CI. Assert the docs' numeric claims against that fixture too:
 a doc that says "the fraud filter is worth ~5% of GMV" should fail a build when it stops
-being true. See `analytics/fixtures/seed.py` for the pattern.
+being true — a script that seeds the fixture and asserts the docs against it in the same
+run keeps both honest.
 
 **Write assertions that fail for the right reason.** Assert on behaviour, not phrasing.
 For a PII refusal, `must_not_include: ["@"]` catches a leaked address no matter how the
@@ -138,7 +143,7 @@ less than a point, even though it demonstrably read them and the answer was pres
 of the time it got a question wrong. Access was never the bottleneck; structure was. A
 null result that redirects a roadmap is worth more than a win.
 
-**Keep a list of what didn't work** in `analytics/evals/NEGATIVE-RESULTS.md`, one line
+**Keep a list of what didn't work** in a `NEGATIVE-RESULTS.md` beside the eval sets, one line
 each. Known entries: stacking more rounds of doc refinement past ~3 iterations (docs got
 longer, not better); downgrading the adversarial reviewer to a cheaper model (lost most
 of the accuracy gain for no real speedup).

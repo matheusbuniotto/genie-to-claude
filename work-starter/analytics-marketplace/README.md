@@ -8,10 +8,10 @@ tell when an answer is wrong.
 | **analytics-desk** | business users | ask a question, get a governed, reviewed, sourced answer |
 | **analytics-workbench** | data analysts / engineers | QA analyses, author the docs the agent retrieves, run and ablate evals, migrate Genie spaces |
 
-Built from Anthropic's "How Anthropic enables self-service data analytics with Claude"
-(see the reference-implementation repo this was copied from for the full article and
-distilled notes). Its premise: analytics accuracy is a **context and retrieval** problem,
-not a code-generation one. Skills took measured accuracy from 21% to >95% internally.
+Built from Anthropic's [How Anthropic enables self-service data analytics with
+Claude](https://claude.com/blog/how-anthropic-enables-self-service-data-analytics-with-claude).
+Its premise: analytics accuracy is a **context and retrieval** problem, not a
+code-generation one. Skills took measured accuracy from 21% to >95%.
 
 ## Install
 
@@ -23,8 +23,8 @@ not a code-generation one. Skills took measured accuracy from 21% to >95% intern
 ```
 
 Then point them at your knowledge: create `analytics/references/INDEX.md` and one doc per
-domain. See `../analytics/references/example-domain.md` for the skeleton to copy, or run
-`/analytics-workbench:new-domain <name>` to bootstrap one against your real tables.
+domain. `/analytics-workbench:new-domain <name>` bootstraps one against your real tables,
+and `/analytics-workbench:migrate-genie <space-id>` converts an existing Genie space.
 
 ## analytics-desk
 
@@ -51,12 +51,12 @@ the delta.
 skills/analytics-onboarding  first run: what this is, which path, what "set up" means
 skills/reference-doc         how to write and maintain docs an LLM can retrieve
 skills/eval-loop             write, run, ablate, gate, harvest corrections
-agents/analysis-qa           reviews a finished analysis, not just its SQL
-commands/check               /analytics-workbench:check   (structural gate, free)
-commands/qa                  /analytics-workbench:qa <analysis>
-commands/evals               /analytics-workbench:evals [id regex]
-commands/new-domain          /analytics-workbench:new-domain marketing
+agents/analysis-reviewer     reviews a finished analysis, not just its SQL
 commands/migrate-genie       /analytics-workbench:migrate-genie <space-id|file>
+commands/new-domain          /analytics-workbench:new-domain marketing
+commands/check-setup         /analytics-workbench:check-setup      free, no model calls
+commands/run-evals           /analytics-workbench:run-evals [slice] [parity]
+commands/review-analysis     /analytics-workbench:review-analysis <analysis>
 scripts/                     check.py, run_evals.py, migrate_genie.py (all --selftest)
 hooks/                       flags a model change whose reference doc wasn't touched
 ```
@@ -71,7 +71,7 @@ carrying the skeleton. It makes no model calls, so it runs on every PR — unlik
 ```
 stakeholder correction ─┐
 eval failure ───────────┼─→ one-line fix in a reference doc
-analysis-qa DOC GAP ────┘        ↓
+analysis-reviewer DOC GAP ────┘        ↓
                           eval case added
                                  ↓
                        re-run slice, delta in the PR
@@ -81,7 +81,7 @@ Every arrow is deliberately cheap. The measured failure mode is not that people 
 docs, it's that fixing a doc costs more than ignoring it — accuracy drifted 95% → 65% in a
 month without this loop.
 
-`analysis-qa` ends every review with `DOC GAP` for exactly that reason: a finding fixed in
+`analysis-reviewer` ends every review with `DOC GAP` for exactly that reason: a finding fixed in
 one analysis recurs next week; a finding written into a reference doc does not.
 
 ### Genie migration

@@ -1,5 +1,5 @@
 ---
-description: Ask the data warehouse a question in plain language and get a reviewed, sourced answer.
+description: Ask a data question in plain language and get an answer that names its source, its freshness, and the review it passed.
 argument-hint: [your question, e.g. how did revenue do last month?]
 ---
 

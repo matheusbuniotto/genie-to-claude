@@ -1,6 +1,6 @@
 ---
-description: Migrate a Databricks Genie space into reference docs + evals, then fill the gaps Genie has no field for.
-argument-hint: [space id, or path to an exported yml/json]
+description: Bring a Databricks Genie space into Claude — its tables, synonyms and instructions become a reference doc and an eval set, then you fill the gaps Genie has no field for.
+argument-hint: [a Genie space id, or a path to an exported yml/json]
 allowed-tools: Bash, Read, Edit, Write, Glob, Grep
 ---
 
@@ -53,7 +53,7 @@ the row to add to `analytics/references/INDEX.md`. It reads both the live API's
    tables because Genie had nothing else to name. Cases from `sample_questions` have no
    assertions at all and carry `expect_tier: TODO`. Strengthen both — add the hygiene
    filter, the real expected tier, and the forbidden deprecated tables — then run the
-   slice with `/analytics-workbench:evals`.
+   slice with `/analytics-workbench:run-evals`.
 
 6. **Prove parity before you switch anyone over.** Genie's gold SQL is the old system's
    answer, so run the slice with number parity on and compare like for like:

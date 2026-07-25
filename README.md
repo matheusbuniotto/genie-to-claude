@@ -59,7 +59,7 @@ copy to drop into a work repo: same plugins, empty skeleton, seven steps.
 | 1. Export | `databricks api get /api/2.0/genie/spaces/$ID?include_serialized_space=true` | the raw space |
 | 2. Convert | `/analytics-workbench:migrate-genie <id>` | a reference doc + an eval set, with `TODO` wherever Genie has no field |
 | 3. Close TODOs | — | grain, exclusions, ownership, freshness, routing triggers: **the actual work** |
-| 4. Prove parity | `/analytics-workbench:evals ^<domain>- parity` | Genie's benchmark SQL executed, Claude's answer compared against its number |
+| 4. Prove parity | `/analytics-workbench:run-evals ^<domain>- parity` | Genie's benchmark SQL executed, Claude's answer compared against its number |
 
 Step 3 is the point. The migrator refuses to guess: a Genie space has no notion of grain,
 scope, deprecated tables, owner or freshness, so those come out as counted `TODO`s rather
@@ -109,10 +109,10 @@ Installed in the quickstart above. Measured with `claude plugin details`:
 
 | Plugin | Skills | Agents | Hooks | Always-on cost |
 |---|---|---|---|---|
-| analytics-desk | 3 | 1 | 0 | ~334 tok |
-| analytics-workbench | 8 | 1 | 1 | ~661 tok |
+| analytics-desk | 3 | 1 | 0 | ~337 tok |
+| analytics-workbench | 8 | 1 | 1 | ~707 tok |
 
-~995 tokens of always-on context buys the router, the runbook, both reviewers, the
+~1,050 tokens of always-on context buys the router, the runbook, both reviewers, the
 first-run guide and every command; the reference docs load on demand, which is the entire point of the
 router.
 

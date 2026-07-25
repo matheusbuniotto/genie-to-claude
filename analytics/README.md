@@ -51,7 +51,7 @@ python3 fixtures/seed.py                                                   # fro
 cd .. && python3 analytics-marketplace/analytics-workbench/scripts/run_evals.py
 ```
 
-With the workbench plugin installed, `/analytics-workbench:evals` does the same and
+With the workbench plugin installed, `/analytics-workbench:run-evals` does the same and
 interprets the failures.
 
 ## The fixture warehouse

@@ -74,7 +74,7 @@ is invisible to the agent), then tier-1 metric coverage, then grain, exclusions,
 freshness. Ask the domain owner for what the warehouse can't tell you.
 
 ```
-/analytics-workbench:check
+/analytics-workbench:check-setup
 ```
 
 Free — no API calls, no warehouse. It fails until the doc is registered and the migrated
@@ -87,7 +87,7 @@ Genie's benchmark SQL is the old system's answer. Run the slice with number pari
 compare like for like:
 
 ```
-/analytics-workbench:evals ^<domain>- parity
+/analytics-workbench:run-evals ^<domain>- parity
 ```
 
 Every case with `gold_sql` has that SQL executed against your warehouse, and Claude's
@@ -114,7 +114,7 @@ through the `sql-reviewer` subagent before you see a number.
 Unmaintained, this decays fast: measured accuracy drifts from ~95% to ~65% in about a
 month.
 
-- `/analytics-workbench:qa <analysis>` before anything reaches a stakeholder or a deck.
+- `/analytics-workbench:review-analysis <analysis>` before anything reaches a stakeholder or a deck.
 - The doc-drift hook nudges you when you edit a model a reference doc names. Update the
   doc in the same change, not later.
 - Every correction ("wrong table", "you missed the fraud filter") becomes one line in the
@@ -128,7 +128,7 @@ month.
 | Symptom | Cause |
 |---|---|
 | Agent answers without reading any doc | The doc isn't in `analytics/references/INDEX.md`. The router is the only way in. |
-| `/analytics-workbench:check` reports `unfinished migration` | Migrated eval cases still carry `expect_tier: TODO`. Set the tier and add assertions. |
+| `/analytics-workbench:check-setup` reports `unfinished migration` | Migrated eval cases still carry `expect_tier: TODO`. Set the tier and add assertions. |
 | Answers have no provenance footer | Plugins aren't loaded — re-run `/reload-plugins` and verify the skill count. |
 | `--gold-cmd` reports `gold_error` | The gold SQL no longer runs. That's a finding about the eval set; fix the query, don't drop the case. |
 | Agent invents a table | It has no doc for that domain. Say the domain is undocumented rather than widening its access. |

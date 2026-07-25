@@ -51,13 +51,14 @@ stops at "no connection" — correctly, but the user will read it as broken.
 
 Not "the command exited 0". A domain is ready when all four hold:
 
-1. Its doc is registered in `analytics/references/INDEX.md` — the router is the only way
-   in, and an unregistered doc is invisible no matter how good it is.
-2. `python3 scripts/check.py` passes: no `TODO` tiers, every eval asserts something,
-   every link resolves, the doc carries the skeleton sections.
+1. Its doc is registered in the router `INDEX.md` (`analytics/references/` by default,
+   or the path `CLAUDE.md` names) — an unregistered doc is invisible no matter how good
+   it is.
+2. `/analytics-workbench:check-setup` passes: no `TODO` tiers, every eval asserts
+   something, every link resolves, the doc carries the skeleton sections.
 3. Its eval slice clears ~90%.
 4. For a migration: number parity passes against the old system's gold SQL
-   (`run_evals.py --gold-cmd …`). Same tables is not the same answer.
+   (`/analytics-workbench:run-evals <slice> parity`). Same tables is not the same answer.
 
 Report progress as that checklist. It is the only honest measure of "done" here, and
 users consistently assume step 1 is automatic.

@@ -1,6 +1,6 @@
 ---
-description: QA a finished analysis before it ships — method, query, claims, provenance, and the doc gap behind any finding.
-argument-hint: [file, query, or description of the analysis]
+description: Review a finished analysis before it reaches a stakeholder — method, query, claims, provenance, and the missing doc line behind any finding.
+argument-hint: [a file, a query, or a description of the analysis]
 ---
 
 QA this analysis: **$ARGUMENTS**
@@ -9,7 +9,7 @@ If the argument is a file or notebook, read it. If it's a query, read the refere
 for the domain it touches first. If nothing was given, QA the analysis in the current
 conversation.
 
-Spawn the `analysis-qa` agent and report its verdict verbatim — do not soften it and do
+Spawn the `analysis-reviewer` agent and report its verdict verbatim — do not soften it and do
 not fix things silently.
 
 Then, for each `DOC GAP` it reports:

@@ -1,5 +1,5 @@
 ---
-description: Structural gate — evals well-formed, docs registered in the router, links resolve, skeleton intact. No model calls, no credentials.
+description: Check the project is wired up correctly — docs registered in the router, evals well-formed, links resolving, skeleton intact. Free: no model calls, no warehouse.
 allowed-tools: Bash, Read, Edit, Glob, Grep
 ---
 
@@ -11,7 +11,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/check.py
 
 Run from the repo root. It costs nothing — no API calls, no warehouse — so it runs before
 every commit and on every PR. It cannot tell you the agent is accurate; only
-`/analytics-workbench:evals` does that. What it catches is the drift that precedes wrong
+`/analytics-workbench:run-evals` does that. What it catches is the drift that precedes wrong
 answers.
 
 Then, for each failure, fix the cause rather than the symptom:
