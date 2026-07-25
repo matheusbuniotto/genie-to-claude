@@ -9,49 +9,60 @@ for Claude Code, plus the harness that checks Claude returns the same numbers Ge
 
 ## Quickstart
 
-No Databricks account needed — this runs offline against a seeded SQLite warehouse, so
-you can watch the whole loop before pointing it at anything real. Everything after the
-clone is a slash command; the plugins carry their own scripts and run them for you.
+Install straight from this repo — no clone, nothing to build. Run these in Claude Code,
+from whichever repo your analytics content lives in.
 
-**1. Clone and install the two plugins.**
-
-```bash
-git clone https://github.com/matheusbuniotto/genie-to-claude && cd genie-to-claude
-```
+**1. Add the marketplace and install the plugins.**
 
 ```shell
-/plugin marketplace add ./analytics-marketplace
+/plugin marketplace add matheusbuniotto/genie-to-claude
 /plugin install analytics-desk@analytics-agents        # business users
 /plugin install analytics-workbench@analytics-agents   # data team
 /reload-plugins
 ```
 
-**2. Migrate the example Genie space** — the real `serialized_space` v2 payload the
-Databricks API returns.
+**2. Bring your Genie space over.**
 
 ```
-/analytics-workbench:migrate-genie analytics/examples/orders.serialized_space.json
+/analytics-workbench:migrate-genie <space-id>
 ```
 
-You get a reference doc, an eval set, and a count of the `TODO`s a human still owes —
-grain, ownership, freshness and the rest a Genie space has no field for. The command walks
-you through closing them.
+Its tables, synonyms, instructions and benchmarks become a reference doc and an eval set,
+plus a count of the `TODO`s a human still owes — grain, ownership, freshness and the rest
+a Genie space has no field for. The command walks you through closing them.
 
 **3. Ask a question.**
 
 ```
-/analytics-desk:what-can-i-ask                        # or, if you're new
+/analytics-desk:what-can-i-ask                        # start here if you're new
 /analytics-desk:ask what was net revenue last month?
 ```
 
-The agent builds the fixture warehouse if it's missing, routes to the semantic layer,
-sends the query through a hostile reviewer, and closes with a provenance footer.
+Every answer routes to the semantic layer first, goes through a hostile reviewer, and
+closes with a provenance footer saying how much to trust it.
 
-New here? Just ask *"how do I set this up for my own Genie space?"* — the
-`analytics-onboarding` skill takes it from there.
+New here? Just ask *"how do I set this up?"* — the `analytics-onboarding` skill takes it
+from there.
 
-**Going to production →** [`work-starter/`](work-starter/README.md) is the self-contained
-copy to drop into a work repo: same plugins, empty skeleton, seven steps.
+### Want to see it work before pointing it at real data?
+
+Clone this repo and the same commands run offline against a seeded SQLite warehouse — no
+Databricks account, no credentials:
+
+```bash
+git clone https://github.com/matheusbuniotto/genie-to-claude && cd genie-to-claude
+```
+
+```
+/analytics-workbench:migrate-genie analytics/examples/orders.serialized_space.json
+/analytics-desk:ask what was net revenue last month?
+```
+
+The example is the real `serialized_space` v2 payload the Databricks API returns, and the
+agent seeds the fixture warehouse itself if it's missing.
+
+**Going to production →** [`work-starter/`](work-starter/README.md) is a self-contained
+folder to drop into a work repo: an empty content skeleton and seven steps.
 
 ## The migration, end to end
 
@@ -91,18 +102,52 @@ modes account for most wrong answers, and every directory here attacks one.
 Without skills, measured accuracy on analytics questions sat at 21%; with them, above 95%.
 That gap is why the migration target is a skill and a doc, not a prompt.
 
-## Layout
+## Repo structure
+
+One split runs through the whole repo: **plugins are the behaviour, `analytics/` is the
+knowledge.** The behaviour is generic and stable — it never mentions your tables. The
+knowledge changes daily and lives next to the models it describes. You install the first
+and own the second.
 
 ```
-analytics-marketplace/   two installable Claude Code plugins  ← the behaviour
-analytics/               reference docs, evals, fixture warehouse  ← the content
-work-starter/            self-contained copy to drop into a work repo
-analytics-agent-notes/   distilled notes from the source article
-.github/workflows/       CI: rebuild fixture, verify doc claims, run selftests
+.claude-plugin/marketplace.json    what /plugin marketplace add reads
+
+analytics-marketplace/             ← the behaviour: install it, don't fork it
+  analytics-desk/                  for people who can't check the answer
+    skills/                        warehouse-knowledge (router), warehouse-runbook
+                                   (process), analytics-help (explains itself)
+    agents/sql-reviewer            hostile review, mandatory before any number ships
+    commands/                      ask, what-can-i-ask
+  analytics-workbench/             for the people who own the data
+    skills/                        reference-doc, eval-loop, analytics-onboarding
+    agents/analysis-reviewer       reviews a finished analysis, not just its SQL
+    commands/                      migrate-genie, new-domain, check-setup,
+                                   run-evals, review-analysis
+    scripts/                       what the commands run (check, evals, migrator)
+    hooks/                         flags a model change whose doc wasn't touched
+
+analytics/                         ← the knowledge: this is the part you replace
+  references/INDEX.md              the router — read before any query
+  references/*.md                  one doc per business domain
+  evals/*.jsonl                    offline evals, graded on the query and the tier
+  fixtures/seed.py                 builds the demo warehouse, asserts the docs are true
+  examples/                        sample Genie spaces + what the migrator makes of them
+
+work-starter/                      copy this folder into a work repo to start clean
+analytics-agent-notes/             the research this is built on
+.github/workflows/                 CI: rebuild fixture, verify doc claims, run selftests
 ```
 
-The split matters: plugins ship the *procedure* and are stable; `analytics/` holds the
-*knowledge*, changes daily, and lives next to the models it describes.
+Three consequences worth knowing up front:
+
+- **The plugins never hardcode your warehouse.** `analytics/references/` is a default that
+  `CLAUDE.md` can override; the connection ladder lives in `CLAUDE.md` too. Nothing in
+  `analytics-marketplace/` needs editing to work against your data.
+- **`analytics/` here is a worked example, not a library.** A fictional marketplace —
+  orders, revenue, refunds — filled in properly so you can copy the shape. Replace it.
+- **The router is the load-bearing file.** `references/INDEX.md` is how a question gets
+  narrowed to one doc before any SQL is written. A doc that isn't registered there is
+  invisible to the agent no matter how good it is.
 
 ## The two plugins
 

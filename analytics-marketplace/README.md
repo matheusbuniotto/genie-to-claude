@@ -17,11 +17,15 @@ measured accuracy from 21% to >95%.
 ## Install
 
 ```shell
-/plugin marketplace add ./analytics-marketplace
+/plugin marketplace add matheusbuniotto/genie-to-claude
 /plugin install analytics-desk@analytics-agents        # business users
 /plugin install analytics-workbench@analytics-agents   # data team (install both)
 /reload-plugins
 ```
+
+That reads `.claude-plugin/marketplace.json` at the repo root — no clone needed. Working
+on the plugins themselves, or from a copied folder? Point it at a path instead:
+`/plugin marketplace add ./analytics-marketplace`.
 
 Then point them at your knowledge: create `analytics/references/INDEX.md` and one doc per
 domain. [`../analytics/`](../analytics/README.md) is a filled-in example to copy the shape

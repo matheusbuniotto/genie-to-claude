@@ -45,12 +45,23 @@ jobs:
           pipx install uv || pip install uv
           uv run analytics-marketplace/analytics-workbench/scripts/migrate_genie.py --selftest
 
-      - name: Plugin manifests are valid JSON
+      - name: Plugin manifests are valid JSON and agree with each other
         run: |
           python3 - <<'PY'
-          import json, pathlib, sys
+          import json, pathlib
           for p in pathlib.Path("analytics-marketplace").rglob("*.json"):
               json.load(open(p)); print("ok", p)
+
+          # Two marketplace manifests exist on purpose: the root one is what
+          # `/plugin marketplace add <owner>/<repo>` reads, the nested one is what a
+          # copied folder installs from. They may differ in source paths and nothing else.
+          def plugins(path):
+              m = json.load(open(path))
+              return {p["name"]: (p["version"], p["description"]) for p in m["plugins"]}
+          root = plugins(".claude-plugin/marketplace.json")
+          nested = plugins("analytics-marketplace/.claude-plugin/marketplace.json")
+          assert root == nested, f"marketplace manifests drifted:\n{root}\n{nested}"
+          print("ok both marketplace manifests agree")
           PY
 
   # Costs real tokens, so it never runs automatically. Trigger from the Actions tab, or

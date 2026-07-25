@@ -32,6 +32,12 @@ you; you never have to install anything Python-side or remember a flag.
 /reload-plugins
 ```
 
+This installs the copy that came with this folder, so it stays pinned no matter what
+happens upstream. To track upstream instead, use
+`/plugin marketplace add matheusbuniotto/genie-to-claude` and delete
+`analytics-marketplace/` from this folder — but then a plugin change lands without you
+choosing it.
+
 Verify with `claude plugin details analytics-desk@analytics-agents` — 5 skills, 1 agent.
 Same for `analytics-workbench` — 8 skills, 1 agent, 1 hook.
 

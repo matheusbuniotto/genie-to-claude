@@ -1,0 +1,29 @@
+{
+  "name": "analytics-agents",
+  "owner": {
+    "name": "Matheus Buniotto",
+    "email": "matheus.buniotto@gmail.com"
+  },
+  "metadata": {
+    "description": "Self-service analytics agents: a consumption plugin for business users and an authoring/QA plugin for the data team.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "analytics-desk",
+      "source": "./analytics-marketplace/analytics-desk",
+      "description": "Ask the warehouse questions in plain language. Routes every question through the governed metric layer first, reviews its own SQL adversarially, and answers with a provenance footer.",
+      "version": "0.1.0",
+      "category": "data",
+      "keywords": ["analytics", "sql", "self-service", "business-intelligence"]
+    },
+    {
+      "name": "analytics-workbench",
+      "source": "./analytics-marketplace/analytics-workbench",
+      "description": "For the data team: QA an analysis, author and maintain the reference docs the agent retrieves, run and ablate the offline eval suite, and migrate Databricks Genie spaces into it.",
+      "version": "0.1.0",
+      "category": "data",
+      "keywords": ["analytics", "evals", "data-quality", "genie", "databricks"]
+    }
+  ]
+}
