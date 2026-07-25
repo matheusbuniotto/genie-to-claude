@@ -58,6 +58,19 @@ way to a number.
 > **Owner:** <owning team>
 ```
 
+Add one plain-language line under the footer whenever the answer needs handling — and
+only then, or it becomes wallpaper the reader stops seeing:
+
+- raw exploration → `⚠️ No official definition covered this. Verify with <owner> before
+  forwarding.`
+- the period isn't closed, or the data settles late → `⚠️ <period> is still moving; this
+  number will change.`
+- low confidence, or an assumption you had to make → state the assumption in that line,
+  not only in the body.
+
+The reader usually cannot check the number. The footer is what tells them how much weight
+it carries; a caveat buried in a paragraph does not survive being pasted into Slack.
+
 ## Reporting rules
 
 - Show the filters, inclusions and exclusions you applied. Every time.

@@ -40,6 +40,7 @@ you through closing them.
 **3. Ask a question.**
 
 ```
+/analytics-desk:what-can-i-ask                        # or, if you're new
 /analytics-desk:ask what was net revenue last month?
 ```
 
@@ -109,16 +110,20 @@ Installed in the quickstart above. Measured with `claude plugin details`:
 
 | Plugin | Skills | Agents | Hooks | Always-on cost |
 |---|---|---|---|---|
-| analytics-desk | 3 | 1 | 0 | ~337 tok |
+| analytics-desk | 5 | 1 | 0 | ~496 tok |
 | analytics-workbench | 8 | 1 | 1 | ~707 tok |
 
-~1,050 tokens of always-on context buys the router, the runbook, both reviewers, the
-first-run guide and every command; the reference docs load on demand, which is the entire point of the
+~1,200 tokens of always-on context buys the router, the runbook, both reviewers, the
+two self-explanation surfaces and every command; the reference docs load on demand, which is the entire point of the
 router.
 
-**analytics-desk** — for people who can't check the answer. Routes to the semantic layer
-first, spawns a hostile `sql-reviewer` before showing any number, ends every answer with a
-provenance footer (source tier, freshness, owner).
+**analytics-desk** — for people who can't check the answer, which is the case the whole
+design is built around. Routes to the semantic layer first, spawns a hostile `sql-reviewer`
+before showing any number, and ends every answer with a provenance footer (source tier,
+freshness, owner). It also explains itself: `/analytics-desk:what-can-i-ask` lists the
+documented domains in business language and names what it will decline, and the
+`analytics-help` skill translates the footer, the clarifying questions and the refusals —
+a trust signal nobody can read is decoration.
 
 **analytics-workbench** — for the people who own the data. Migrate Genie spaces, author
 reference docs, QA a finished analysis, run and ablate the eval suite. Details in

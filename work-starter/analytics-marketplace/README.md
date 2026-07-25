@@ -31,8 +31,10 @@ and `/analytics-workbench:migrate-genie <space-id>` converts an existing Genie s
 ```
 skills/warehouse-knowledge   declarative: where the answer lives (the router)
 skills/warehouse-runbook     procedural: clarify → route → query → review → footer
+skills/analytics-help        explains the footer, the boundary, and a declined answer
 agents/sql-reviewer          hostile query review, mandatory before any number ships
 commands/ask                 /analytics-desk:ask how did revenue do last month?
+commands/what-can-i-ask      /analytics-desk:what-can-i-ask  — start here if you're new
 ```
 
 The design constraint: **the user cannot check the answer.** So the agent is routed to the
@@ -40,6 +42,11 @@ metric layer first, is not allowed to self-certify a query, and ends every answe
 provenance footer stating source tier, freshness and owner. `raw exploration, freshness
 unknown` is the signal to verify before forwarding — one of the few defences against a
 wrong answer that looks fine.
+
+That only works if the reader understands the signal, so the plugin explains itself:
+`/analytics-desk:what-can-i-ask` lists the documented domains in business language and
+names what will be declined, and `analytics-help` translates the footer, the clarifying
+questions and the refusals on demand. A footer nobody can read is decoration.
 
 Adversarial review costs ~30% more tokens and ~70% more latency for ~6% accuracy. Both
 plugins assume you want that trade; if you don't, drop step 6 from the runbook and record

@@ -32,7 +32,7 @@ you; you never have to install anything Python-side or remember a flag.
 /reload-plugins
 ```
 
-Verify with `claude plugin details analytics-desk@analytics-agents` — 3 skills, 1 agent.
+Verify with `claude plugin details analytics-desk@analytics-agents` — 5 skills, 1 agent.
 Same for `analytics-workbench` — 8 skills, 1 agent, 1 hook.
 
 New to this? Ask Claude "how do I set this up?" — the `analytics-onboarding` skill walks
@@ -100,14 +100,24 @@ you don't know it agreed with Genie.
 
 **Don't announce a domain to stakeholders until its slice clears ~90%.**
 
-## 6. Use it
+## 6. Hand it to the business users
+
+This is the part that matters — they're the ones who can't tell a right number from a
+plausible one. Tell them two commands and one habit:
 
 ```
+/analytics-desk:what-can-i-ask          # what's covered, in business language
 /analytics-desk:ask what was net revenue last month?
 ```
 
-Every answer ends with a provenance footer — source tier, freshness, owner — and passes
-through the `sql-reviewer` subagent before you see a number.
+Every answer ends with a provenance footer — source tier, freshness, owner — and has
+passed through the `sql-reviewer` subagent before they see a number. **The habit: read the
+footer before forwarding.** `semantic layer` is the official number; `raw exploration`
+means nothing governed covered the question, so it needs a check first.
+
+They don't have to learn any of that up front — the `analytics-help` skill explains the
+footer, a clarifying question, or a declined answer whenever someone asks. Point them at
+`/analytics-desk:what-can-i-ask` on day one and let the rest arrive when it's needed.
 
 ## 7. Keep it alive
 
