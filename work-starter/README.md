@@ -14,9 +14,12 @@ CLAUDE.md                the only environment-specific file — fill in the brac
 BEST-PRACTICES.md        read before your second domain
 ```
 
-**Before you start:** Claude Code, `python3`, and the `databricks` CLI authenticated
+**Before you start:** Claude Code and the `databricks` CLI authenticated
 (`databricks auth login`). No fixture or fake data ships here — this starter points at a
 real workspace.
+
+Everything below is a slash command. The plugins carry their own scripts and run them for
+you; you never have to install anything Python-side or remember a flag.
 
 ---
 
@@ -30,7 +33,7 @@ real workspace.
 ```
 
 Verify with `claude plugin details analytics-desk@analytics-agents` — 3 skills, 1 agent.
-Same for `analytics-workbench` — 7 skills, 1 agent, 1 hook.
+Same for `analytics-workbench` — 8 skills, 1 agent, 1 hook.
 
 New to this? Ask Claude "how do I set this up?" — the `analytics-onboarding` skill walks
 through the paths below and tells you what "done" means at each step.
@@ -66,34 +69,29 @@ A Genie space has no field for routing triggers, grain, exclusions, deprecated t
 ownership or freshness, so the migrator writes `TODO` instead of guessing. The script
 exiting 0 means the typing is done, not the migration.
 
-```shell
-grep -c TODO analytics/references/*.md
-```
-
 Work them in this order: the routing trigger and the `INDEX.md` row (an unregistered doc
 is invisible to the agent), then tier-1 metric coverage, then grain, exclusions, owner and
 freshness. Ask the domain owner for what the warehouse can't tell you.
 
-```shell
-python3 analytics-marketplace/analytics-workbench/scripts/check.py
+```
+/analytics-workbench:check
 ```
 
-Free, no API calls. It fails until the doc is registered and the migrated evals have real
-tiers and assertions. That red build is the gate — don't silence it by deleting cases.
+Free — no API calls, no warehouse. It fails until the doc is registered and the migrated
+evals have real tiers and assertions, and tells you which. That red build is the gate;
+don't silence it by deleting cases.
 
 ## 5. Prove the migration preserved the answers
 
 Genie's benchmark SQL is the old system's answer. Run the slice with number parity on and
 compare like for like:
 
-```shell
-python3 analytics-marketplace/analytics-workbench/scripts/run_evals.py \
-  --filter '^<domain>-' \
-  --gold-cmd 'databricks sql query --warehouse-id <id> -' --keep-qualified
+```
+/analytics-workbench:evals ^<domain>- parity
 ```
 
-Every case with `gold_sql` has that SQL executed, and Claude's answer must state the
-number it returned. Anchor each gold query to a fixed window first — "last month" gives a
+Every case with `gold_sql` has that SQL executed against your warehouse, and Claude's
+answer must state the number it returned. Anchor each gold query to a fixed window first — "last month" gives a
 different number next month and the comparison means nothing.
 
 A case failing on `numbers_ok` alone — right table, right tier, wrong number — is the
@@ -130,7 +128,7 @@ month.
 | Symptom | Cause |
 |---|---|
 | Agent answers without reading any doc | The doc isn't in `analytics/references/INDEX.md`. The router is the only way in. |
-| `check.py` fails on `unfinished migration` | Migrated eval cases still carry `expect_tier: TODO`. Set the tier and add assertions. |
+| `/analytics-workbench:check` reports `unfinished migration` | Migrated eval cases still carry `expect_tier: TODO`. Set the tier and add assertions. |
 | Answers have no provenance footer | Plugins aren't loaded — re-run `/reload-plugins` and verify the skill count. |
 | `--gold-cmd` reports `gold_error` | The gold SQL no longer runs. That's a finding about the eval set; fix the query, don't drop the case. |
 | Agent invents a table | It has no doc for that domain. Say the domain is undocumented rather than widening its access. |

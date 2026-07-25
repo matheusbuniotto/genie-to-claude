@@ -1,6 +1,6 @@
 ---
-description: Run the offline eval suite (or one slice) and report pass rate, failures, and what to fix.
-argument-hint: [optional id regex, e.g. ^orders- ]
+description: Run the offline eval suite (or one slice) and report pass rate, failures, and what to fix. Add "parity" to check numbers against gold SQL.
+argument-hint: [optional id regex, e.g. ^orders- ] [parity]
 allowed-tools: Bash, Read, Edit, Glob, Grep
 ---
 
@@ -10,12 +10,13 @@ Run the offline evals. Follow the `eval-loop` skill.
 python3 ${CLAUDE_PLUGIN_ROOT}/scripts/run_evals.py ${ARGUMENTS:+--filter "$ARGUMENTS"}
 ```
 
-On a migrated slice, add number parity — the gold SQL came from the system being
-replaced, so this is the run that says whether the migration preserved the answers:
+If the arguments mention **parity**, add number parity — the gold SQL came from the
+system being replaced, so this is the run that says whether the migration preserved the
+answers. Take the SQL command from the connection ladder in `CLAUDE.md`:
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/run_evals.py ${ARGUMENTS:+--filter "$ARGUMENTS"} \
-  --gold-cmd 'sqlite3 analytics/fixtures/warehouse.db'   # or your real warehouse CLI
+python3 ${CLAUDE_PLUGIN_ROOT}/scripts/run_evals.py --filter '<id regex>' \
+  --gold-cmd '<warehouse CLI reading SQL on stdin>'   # --keep-qualified if not a fixture
 ```
 
 Run from the repo root. Then:

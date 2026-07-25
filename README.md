@@ -9,28 +9,15 @@ for Claude Code, plus the harness that checks Claude returns the same numbers Ge
 
 ## Quickstart
 
-No Databricks account needed — steps 1–2 run offline against a seeded SQLite warehouse,
-so you can watch the whole loop before pointing it at anything real.
+No Databricks account needed — this runs offline against a seeded SQLite warehouse, so
+you can watch the whole loop before pointing it at anything real. Everything after the
+clone is a slash command; the plugins carry their own scripts and run them for you.
 
-**1. Build the fixture warehouse.** Also re-checks every numeric claim in the docs.
+**1. Clone and install the two plugins.**
 
 ```bash
 git clone https://github.com/matheusbuniotto/genie-to-claude && cd genie-to-claude
-python3 analytics/fixtures/seed.py
 ```
-
-**2. Migrate an example Genie space.** This is the real `serialized_space` v2 payload the
-Databricks API returns.
-
-```bash
-uv run analytics-marketplace/analytics-workbench/scripts/migrate_genie.py \
-  analytics/examples/orders.serialized_space.json --domain orders_genie
-```
-
-You get a reference doc, an eval set, and a count of the `TODO`s a human still owes —
-grain, ownership, freshness and the rest that a Genie space has no field for.
-
-**3. Install the plugins and let Claude walk you through the rest.**
 
 ```shell
 /plugin marketplace add ./analytics-marketplace
@@ -39,9 +26,28 @@ grain, ownership, freshness and the rest that a Genie space has no field for.
 /reload-plugins
 ```
 
-Then just ask — the `analytics-onboarding` skill picks it up from there:
+**2. Migrate the example Genie space** — the real `serialized_space` v2 payload the
+Databricks API returns.
 
-> How do I set this up for my own Genie space?
+```
+/analytics-workbench:migrate-genie analytics/examples/orders.serialized_space.json
+```
+
+You get a reference doc, an eval set, and a count of the `TODO`s a human still owes —
+grain, ownership, freshness and the rest a Genie space has no field for. The command walks
+you through closing them.
+
+**3. Ask a question.**
+
+```
+/analytics-desk:ask what was net revenue last month?
+```
+
+The agent builds the fixture warehouse if it's missing, routes to the semantic layer,
+sends the query through a hostile reviewer, and closes with a provenance footer.
+
+New here? Just ask *"how do I set this up for my own Genie space?"* — the
+`analytics-onboarding` skill takes it from there.
 
 **Going to production →** [`work-starter/`](work-starter/README.md) is the self-contained
 copy to drop into a work repo: same plugins, empty skeleton, seven steps.
@@ -53,7 +59,7 @@ copy to drop into a work repo: same plugins, empty skeleton, seven steps.
 | 1. Export | `databricks api get /api/2.0/genie/spaces/$ID?include_serialized_space=true` | the raw space |
 | 2. Convert | `/analytics-workbench:migrate-genie <id>` | a reference doc + an eval set, with `TODO` wherever Genie has no field |
 | 3. Close TODOs | — | grain, exclusions, ownership, freshness, routing triggers: **the actual work** |
-| 4. Prove parity | `run_evals.py --gold-cmd '<warehouse CLI>'` | Genie's benchmark SQL executed, Claude's answer compared against its number |
+| 4. Prove parity | `/analytics-workbench:evals ^<domain>- parity` | Genie's benchmark SQL executed, Claude's answer compared against its number |
 
 Step 3 is the point. The migrator refuses to guess: a Genie space has no notion of grain,
 scope, deprecated tables, owner or freshness, so those come out as counted `TODO`s rather
@@ -104,10 +110,10 @@ Installed in the quickstart above. Measured with `claude plugin details`:
 | Plugin | Skills | Agents | Hooks | Always-on cost |
 |---|---|---|---|---|
 | analytics-desk | 3 | 1 | 0 | ~334 tok |
-| analytics-workbench | 7 | 1 | 1 | ~590 tok |
+| analytics-workbench | 8 | 1 | 1 | ~661 tok |
 
-~920 tokens of always-on context buys the router, the runbook, both reviewers and the
-first-run guide; the reference docs load on demand, which is the entire point of the
+~995 tokens of always-on context buys the router, the runbook, both reviewers, the
+first-run guide and every command; the reference docs load on demand, which is the entire point of the
 router.
 
 **analytics-desk** — for people who can't check the answer. Routes to the semantic layer
@@ -162,6 +168,7 @@ not recognise "1.2M" as 1,234,567.
 ## Start here
 
 Migrating a Genie space → [`work-starter/README.md`](work-starter/README.md).
+What's coming → [`ROADMAP.md`](ROADMAP.md).
 New to the ideas → [`analytics-agent-notes/index.md`](analytics-agent-notes/index.md).
 Building content for your warehouse → [`analytics/README.md`](analytics/README.md).
 Plugin internals → [`analytics-marketplace/README.md`](analytics-marketplace/README.md).

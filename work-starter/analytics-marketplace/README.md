@@ -52,6 +52,7 @@ skills/analytics-onboarding  first run: what this is, which path, what "set up" 
 skills/reference-doc         how to write and maintain docs an LLM can retrieve
 skills/eval-loop             write, run, ablate, gate, harvest corrections
 agents/analysis-qa           reviews a finished analysis, not just its SQL
+commands/check               /analytics-workbench:check   (structural gate, free)
 commands/qa                  /analytics-workbench:qa <analysis>
 commands/evals               /analytics-workbench:evals [id regex]
 commands/new-domain          /analytics-workbench:new-domain marketing
