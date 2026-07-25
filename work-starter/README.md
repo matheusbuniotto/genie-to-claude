@@ -1,7 +1,7 @@
 # Analytics agent starter
 
-Move a Databricks Genie space into Claude Code — as reference docs, skills and an eval
-suite you own, in a git repo, reviewed like code.
+Move an existing Genie space into Claude Code — as reference docs, skills and an eval
+suite in your own repo.
 
 Copy this folder into your work repo and follow the steps below. Everything in
 `analytics-marketplace/` is generic and installs as-is; everything in `analytics/` is a

@@ -1,11 +1,9 @@
 # genie-to-claude
 
-Move a Databricks Genie space into Claude Code — and prove the answers survived the move.
+Move freely from Genie agents to Claude — and prove the answers survived the move.
 
-A Genie space is a good bootstrap and a bad system of record: its instructions aren't
-reviewed, its definitions can't be diffed, and nothing tells you when it starts being
-wrong. This repo converts one into reference docs, skills and an eval suite that live in
-git, plus the harness that checks Claude returns the same numbers Genie did.
+This repo converts an existing Genie space into reference docs, skills and an eval suite
+for Claude Code, plus the harness that checks Claude returns the same numbers Genie did.
 
 ```bash
 python3 analytics/fixtures/seed.py     # build a fixture warehouse, verify every doc claim
