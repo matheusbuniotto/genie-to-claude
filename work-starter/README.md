@@ -30,7 +30,10 @@ real workspace.
 ```
 
 Verify with `claude plugin details analytics-desk@analytics-agents` — 3 skills, 1 agent.
-Same for `analytics-workbench` — 6 skills, 1 agent, 1 hook.
+Same for `analytics-workbench` — 7 skills, 1 agent, 1 hook.
+
+New to this? Ask Claude "how do I set this up?" — the `analytics-onboarding` skill walks
+through the paths below and tells you what "done" means at each step.
 
 ## 2. Point it at your warehouse
 

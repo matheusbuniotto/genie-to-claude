@@ -1,21 +1,50 @@
 # genie-to-claude
 
+[![analytics](https://github.com/matheusbuniotto/genie-to-claude/actions/workflows/analytics.yml/badge.svg)](https://github.com/matheusbuniotto/genie-to-claude/actions/workflows/analytics.yml)
+
 Move freely from Genie agents to Claude — and prove the answers survived the move.
 
 This repo converts an existing Genie space into reference docs, skills and an eval suite
 for Claude Code, plus the harness that checks Claude returns the same numbers Genie did.
 
+## Quickstart
+
+No Databricks account needed — steps 1–2 run offline against a seeded SQLite warehouse,
+so you can watch the whole loop before pointing it at anything real.
+
+**1. Build the fixture warehouse.** Also re-checks every numeric claim in the docs.
+
 ```bash
-python3 analytics/fixtures/seed.py     # build a fixture warehouse, verify every doc claim
+git clone https://github.com/matheusbuniotto/genie-to-claude && cd genie-to-claude
+python3 analytics/fixtures/seed.py
+```
+
+**2. Migrate an example Genie space.** This is the real `serialized_space` v2 payload the
+Databricks API returns.
+
+```bash
 uv run analytics-marketplace/analytics-workbench/scripts/migrate_genie.py \
   analytics/examples/orders.serialized_space.json --domain orders_genie
 ```
 
-That runs offline, with no Databricks account, against a seeded SQLite warehouse — so you
-can see the whole loop before pointing it at anything real.
+You get a reference doc, an eval set, and a count of the `TODO`s a human still owes —
+grain, ownership, freshness and the rest that a Genie space has no field for.
 
-**Going to production with it →** [`work-starter/`](work-starter/README.md) is the
-self-contained copy to drop in a work repo: same plugins, empty skeleton, seven steps.
+**3. Install the plugins and let Claude walk you through the rest.**
+
+```shell
+/plugin marketplace add ./analytics-marketplace
+/plugin install analytics-desk@analytics-agents        # business users
+/plugin install analytics-workbench@analytics-agents   # data team
+/reload-plugins
+```
+
+Then just ask — the `analytics-onboarding` skill picks it up from there:
+
+> How do I set this up for my own Genie space?
+
+**Going to production →** [`work-starter/`](work-starter/README.md) is the self-contained
+copy to drop into a work repo: same plugins, empty skeleton, seven steps.
 
 ## The migration, end to end
 
@@ -70,19 +99,16 @@ The split matters: plugins ship the *procedure* and are stable; `analytics/` hol
 
 ## The two plugins
 
-```shell
-/plugin marketplace add ./analytics-marketplace
-/plugin install analytics-desk@analytics-agents        # business users
-/plugin install analytics-workbench@analytics-agents   # data team
-```
+Installed in the quickstart above. Measured with `claude plugin details`:
 
 | Plugin | Skills | Agents | Hooks | Always-on cost |
 |---|---|---|---|---|
 | analytics-desk | 3 | 1 | 0 | ~334 tok |
-| analytics-workbench | 6 | 1 | 1 | ~506 tok |
+| analytics-workbench | 7 | 1 | 1 | ~590 tok |
 
-~840 tokens of always-on context buys the router, the runbook and both reviewers; the
-reference docs load on demand, which is the entire point of the router.
+~920 tokens of always-on context buys the router, the runbook, both reviewers and the
+first-run guide; the reference docs load on demand, which is the entire point of the
+router.
 
 **analytics-desk** — for people who can't check the answer. Routes to the semantic layer
 first, spawns a hostile `sql-reviewer` before showing any number, ends every answer with a

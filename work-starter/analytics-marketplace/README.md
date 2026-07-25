@@ -48,6 +48,7 @@ the delta.
 ## analytics-workbench
 
 ```
+skills/analytics-onboarding  first run: what this is, which path, what "set up" means
 skills/reference-doc         how to write and maintain docs an LLM can retrieve
 skills/eval-loop             write, run, ablate, gate, harvest corrections
 agents/analysis-qa           reviews a finished analysis, not just its SQL
