@@ -64,19 +64,35 @@ def check_evals(evals: Path) -> list[str]:
 
 
 def check_router(refs: Path) -> list[str]:
+    """Every domain must be findable from INDEX.md — flat catalogs (metrics.md) by
+    filename, migrated/authored domains (a folder with a SKILL.md) by <slug>/SKILL.md.
+    """
     index = refs / "INDEX.md"
     if not index.is_file():
         return [f"{index} missing — the router is what makes docs findable"]
     text = index.read_text()
-    return [
+    bad = [
         f"{doc.name} is not registered in INDEX.md — the agent will never find it"
         for doc in sorted(refs.glob("*.md"))
         if doc.name != "INDEX.md" and doc.name not in text
     ]
+    bad += [
+        f"{doc.parent.name}/SKILL.md is not registered in INDEX.md — the agent will "
+        "never find it"
+        for doc in sorted(refs.glob("*/SKILL.md"))
+        if f"{doc.parent.name}/SKILL.md" not in text
+    ]
+    return bad
 
 
 def check_sections(refs: Path) -> list[str]:
-    """Domain docs must carry the skeleton. Catalogs and indexes opt out explicitly."""
+    """Domain docs must carry the skeleton. Catalogs and indexes opt out explicitly.
+
+    A domain doc is either a flat file (legacy) or a folder with `SKILL.md` plus
+    `references/*.md` — the skeleton's required sections are checked across whichever
+    files that domain actually has, since progressive disclosure means a section like
+    Key Tables now lives in references/, not SKILL.md.
+    """
     bad = []
     for doc in sorted(refs.glob("*.md")):
         text = doc.read_text()
@@ -85,6 +101,15 @@ def check_sections(refs: Path) -> list[str]:
         missing = [s for s in REQUIRED_SECTIONS if s not in text]
         if missing:
             bad.append(f"{doc.name} missing section(s): {', '.join(missing)}")
+    for skill in sorted(refs.glob("*/SKILL.md")):
+        text = skill.read_text()
+        if OPT_OUT in text:
+            continue
+        for ref in sorted(skill.parent.glob("references/*.md")):
+            text += "\n" + ref.read_text()
+        missing = [s for s in REQUIRED_SECTIONS if s not in text]
+        if missing:
+            bad.append(f"{skill.parent.name}/ missing section(s): {', '.join(missing)}")
     return bad
 
 
@@ -130,10 +155,17 @@ def selftest() -> int:
         refs, evals = root / "references", root / "evals"
         refs.mkdir(), evals.mkdir()
 
-        # a healthy project passes
-        (refs / "INDEX.md").write_text("[orders](orders.md)")
-        (refs / "orders.md").write_text(
-            "## Entity Grain\n## Key Tables\n## Gotchas\n## Cross-References"
+        # a healthy project passes: a flat catalog plus a folder-shaped domain doc
+        (refs / "INDEX.md").write_text(
+            "[metrics](metrics.md)\n[orders](orders/SKILL.md)"
+        )
+        (refs / "metrics.md").write_text("catalog\n" + OPT_OUT)
+        (refs / "orders" / "references").mkdir(parents=True)
+        (refs / "orders" / "SKILL.md").write_text(
+            "---\nname: orders\ndescription: test\n---\n## Entity Grain"
+        )
+        (refs / "orders" / "references" / "orders.md").write_text(
+            "## Key Tables\n## Gotchas\n## Cross-References"
         )
         (evals / "orders.jsonl").write_text(
             json.dumps(
@@ -147,21 +179,25 @@ def selftest() -> int:
             + "\n"
         )
         assert check_evals(evals) == [], check_evals(evals)
-        assert check_router(refs) == [] and check_sections(refs) == []
+        assert check_router(refs) == [], check_router(refs)
+        assert check_sections(refs) == [], check_sections(refs)
 
-        # an unregistered doc is invisible to the agent
-        (refs / "orphan.md").write_text(
-            "## Entity Grain\n## Key Tables\n## Gotchas\n## Cross-References"
+        # an unregistered domain folder is invisible to the agent
+        (refs / "orphan" / "references").mkdir(parents=True)
+        (refs / "orphan" / "SKILL.md").write_text("## Entity Grain")
+        (refs / "orphan" / "references" / "x.md").write_text(
+            "## Key Tables\n## Gotchas\n## Cross-References"
         )
-        assert len(check_router(refs)) == 1
+        assert len(check_router(refs)) == 1, check_router(refs)
 
-        # a doc missing skeleton sections is flagged
-        (refs / "thin.md").write_text("## Key Tables")
-        assert any("thin.md" in p for p in check_sections(refs))
+        # a domain missing skeleton sections is flagged, across SKILL.md + references/
+        (refs / "thin" / "references").mkdir(parents=True)
+        (refs / "thin" / "SKILL.md").write_text("## Key Tables")
+        assert any("thin" in p for p in check_sections(refs))
 
         # ...unless it declares itself not a domain doc
-        (refs / "thin.md").write_text("## Key Tables\n" + OPT_OUT)
-        assert not any("thin.md" in p for p in check_sections(refs))
+        (refs / "thin" / "SKILL.md").write_text("## Key Tables\n" + OPT_OUT)
+        assert not any("thin" in p for p in check_sections(refs))
 
         # assertion-free and malformed cases are caught
         (evals / "bad.jsonl").write_text(

@@ -224,8 +224,29 @@ def benchmarks(doc: dict) -> list[tuple[str, str]]:
 # --- emitting -----------------------------------------------------------------------
 
 
-def reference_doc(domain: str, name: str, desc: str, tbls, rules, snippets) -> str:
+TRIGGER_TODO = (
+    "TODO: state the routing trigger explicitly — 'IF the question is about X → use "
+    "this. DO NOT use for Y (→ other-domain/SKILL.md).' Without it the router can't "
+    "tell this domain apart from its neighbours."
+)
+
+
+def skill_doc(domain: str, name: str, desc: str, tbls, rules, snippets) -> str:
+    """SKILL.md — Claude-Skill-shaped: YAML frontmatter (name/description) plus Quick
+    Reference and tier-1 metrics. This is the file the router opens for every candidate
+    domain before picking one, so it stays short; the deep mechanics (dimensions, key
+    tables, gotchas, query patterns) live in references/<domain>.md and are opened only
+    for the domain that wins — progressive disclosure, same as any other Claude skill.
+    """
+    front = yaml.safe_dump(
+        {"name": name or domain, "description": desc or TRIGGER_TODO},
+        sort_keys=False,
+    ).strip()
     L = [
+        "---",
+        front,
+        "---",
+        "",
         f"# {name} Tables",
         "",
         "<!-- migrated from a Genie space by migrate_genie.py.",
@@ -234,9 +255,7 @@ def reference_doc(domain: str, name: str, desc: str, tbls, rules, snippets) -> s
         "## Quick Reference",
         "",
         "### Use For / Do NOT Use For",
-        "TODO: the routing trigger — 'IF the question is about X → use this doc. DO NOT",
-        "use for Y (→ other-domain.md).' Without it the router can't tell this doc apart",
-        "from its neighbours, which is the retrieval failure this doc exists to prevent.",
+        TRIGGER_TODO,
         "",
         "### Business Context",
         desc or "TODO: what this domain means in plain words.",
@@ -293,7 +312,26 @@ def reference_doc(domain: str, name: str, desc: str, tbls, rules, snippets) -> s
             "",
         ]
 
-    L += ["## Dimensions", ""]
+    L += [
+        "## Full Detail",
+        "",
+        f"Dimensions, key tables, blessed dashboards, gotchas and query patterns: "
+        f"[`references/{domain}.md`](references/{domain}.md).",
+        "",
+    ]
+    return "\n".join(L)
+
+
+def reference_md(domain: str, tbls, rules, snippets) -> str:
+    """references/<domain>.md — opened only once SKILL.md has won the routing
+    decision; everything here assumes the reader already has the Quick Reference."""
+    # SKILL.md already surfaced this snippet as the Standard Hygiene Filter; skip it
+    # here so the query pattern list doesn't repeat it as an ordinary "best practice".
+    hygiene = next(
+        (s for s in snippets if "filter" in str(s.get("display_name", "")).lower()),
+        None,
+    )
+    L = [f"<!-- reference detail for {domain}/SKILL.md -->", "", "## Dimensions", ""]
     synonyms = [
         (c.get("name"), c.get("synonyms") or [])
         for t in tbls
@@ -397,7 +435,7 @@ def eval_case(domain: str, idx: int, question: str, gold_sql: str) -> dict:
 
 def router_entry(domain: str, name: str, desc: str) -> str:
     return (
-        f"| {name} | [`references/{domain}.md`](references/{domain}.md) | "
+        f"| {name} | [`{domain}/SKILL.md`]({domain}/SKILL.md) | "
         f"{desc or 'TODO'} | TODO: adjacent domains that own these questions instead |"
     )
 
@@ -432,20 +470,26 @@ def main() -> int:
     rules, snippets = instructions(doc)
     benches = benchmarks(doc)
 
-    ref_path = args.out / f"{domain}.md"
+    domain_dir = args.out / domain
+    skill_path = domain_dir / "SKILL.md"
+    ref_path = domain_dir / "references" / f"{domain}.md"
     ref_path.parent.mkdir(parents=True, exist_ok=True)
-    ref_path.write_text(reference_doc(domain, name, desc, tbls, rules, snippets))
+    skill_path.write_text(skill_doc(domain, name, desc, tbls, rules, snippets))
+    ref_path.write_text(reference_md(domain, tbls, rules, snippets))
 
     eval_path = args.evals_out / f"{domain}.jsonl"
     eval_path.parent.mkdir(parents=True, exist_ok=True)
     cases = [eval_case(domain, i, q, sql) for i, (q, sql) in enumerate(benches, 1) if q]
     eval_path.write_text("".join(json.dumps(c) + "\n" for c in cases))
 
-    todos = ref_path.read_text().count("TODO") + sum(
-        c["expect_tier"] == "TODO" for c in cases
+    todos = (
+        skill_path.read_text().count("TODO")
+        + ref_path.read_text().count("TODO")
+        + sum(c["expect_tier"] == "TODO" for c in cases)
     )
     print(
-        f"wrote {ref_path}  ({len(tbls)} sources, {len(rules)} rules, {len(snippets)} snippets)"
+        f"wrote {skill_path} and {ref_path}"
+        f"  ({len(tbls)} sources, {len(rules)} rules, {len(snippets)} snippets)"
     )
     print(
         f"wrote {eval_path} ({len(cases)} cases, {sum(1 for c in cases if 'gold_sql' in c)} with gold SQL)"
@@ -540,9 +584,14 @@ def selftest_v2() -> None:
     ), benches[0]
     assert benches[1] == ("What were total sales last month?", ""), benches[1]
 
-    # and the whole pipeline produces a usable doc + eval, not stringified lists
-    md = reference_doc("sales", name, desc, tbls, rules, [])
-    assert "['" not in md and "Customer master data" in md, "list leaked into the doc"
+    # and the whole pipeline produces a usable skill + reference, not stringified lists
+    md = skill_doc("sales", name, desc, tbls, rules, [])
+    ref_md = reference_md("sales", tbls, rules, [])
+    assert "['" not in md and "['" not in ref_md, "list leaked into the doc"
+    assert "Customer master data" in ref_md, "table description missing from reference"
+    # SKILL.md is Claude-Skill-shaped: frontmatter, then a pointer to the deep detail
+    assert md.startswith("---\nname: Sales\n"), "no frontmatter"
+    assert "references/sales.md" in md, "no pointer to the reference detail"
     # a space with no metric view still gets the tier-1 section, or the doc quietly
     # teaches the agent that governed tables are the top of the ladder
     assert "## Metrics (tier 1" in md and "no metric view" in md
@@ -642,9 +691,11 @@ def selftest() -> int:
     assert cases[0]["must_include"] == ["an.core.fact_orders"], cases[0]
     assert cases[1]["expect_tier"] == "TODO" and "gold_sql" not in cases[1]
 
-    doc_md = reference_doc("orders", name, desc, tbls, rules, snippets)
-    assert "WHERE is_test = false" in doc_md and "an.core.fact_orders" in doc_md
-    assert "TODO" in doc_md  # grain is never inferable from a Genie space
+    skill_md = skill_doc("orders", name, desc, tbls, rules, snippets)
+    ref_md = reference_md("orders", tbls, rules, snippets)
+    assert "WHERE is_test = false" in skill_md
+    assert "an.core.fact_orders" in ref_md
+    assert "TODO" in skill_md  # grain is never inferable from a Genie space
 
     # alternate export shapes must survive
     assert space_meta(load('{"display_name": "X"}'))[0] == "X"

@@ -17,10 +17,14 @@ and live in the repo next to the models they describe.
 
 1. Read `analytics/references/INDEX.md` — the domain map, plus the terms that must be
    disambiguated before querying. If `CLAUDE.md` names a different path, use that.
-2. From the map, open the **one** domain doc that owns the question. Open a second only
-   if the question genuinely spans domains.
-3. No `INDEX.md` → list `analytics/references/*.md`, say the project isn't set up yet,
-   and point at `/analytics-workbench:new-domain`.
+2. From the map, open the **one** domain's `SKILL.md` that owns the question (frontmatter
+   + Quick Reference + tier-1 metrics — enough to route and apply the hygiene filter).
+   Only pull in that domain's `references/<domain>.md` (key tables, gotchas, query
+   patterns) once it's the winner — reading it for every candidate domain defeats the
+   point of a short, scannable `SKILL.md`. Open a second domain only if the question
+   genuinely spans domains.
+3. No `INDEX.md` → list `analytics/references/*/SKILL.md` (and any legacy flat `*.md`),
+   say the project isn't set up yet, and point at `/analytics-workbench:new-domain`.
 
 Reading the whole reference directory is a failure, not thoroughness. The point of the
 map is to narrow a million-field warehouse to one file before the first query.

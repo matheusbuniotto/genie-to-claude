@@ -13,7 +13,7 @@ Spawn the `analysis-reviewer` agent and report its verdict verbatim — do not s
 not fix things silently.
 
 Then, for each `DOC GAP` it reports:
-1. Draft the one-line fix for the owning `analytics/references/*.md`.
+1. Draft the one-line fix for the owning domain's `SKILL.md` or `references/*.md`.
 2. Draft the eval case for `analytics/evals/<domain>.jsonl` that would have caught it.
 3. Show both and ask before writing. A finding fixed only in this analysis recurs next
    week.

@@ -56,5 +56,6 @@ mode in this warehouse.
 ## When `sem_orders` doesn't cover it
 
 Item/category questions (it has no item grain), attribution, and marketing spend fall
-through to tier 2 — see [`orders.md`](orders.md) and [`marketing.md`](marketing.md).
-Report `governed table` in the footer when you drop to tier 2.
+through to tier 2 — see [`orders/SKILL.md`](orders/SKILL.md) and
+[`marketing/SKILL.md`](marketing/SKILL.md). Report `governed table` in the footer when
+you drop to tier 2.

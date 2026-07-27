@@ -27,11 +27,18 @@ def model_stem(file_path: str) -> str | None:
 
 
 def docs_mentioning(stem: str, refs: Path) -> list[str]:
+    """A domain doc is either a flat file or a folder (SKILL.md + references/*.md) —
+    check both shapes, reported as a path relative to the references dir."""
     if not stem or not refs.is_dir():
         return []
+    paths = (
+        list(refs.glob("*.md"))
+        + list(refs.glob("*/SKILL.md"))
+        + list(refs.glob("*/references/*.md"))
+    )
     return sorted(
-        p.name
-        for p in refs.glob("*.md")
+        str(p.relative_to(refs))
+        for p in paths
         if p.name != "INDEX.md" and stem in p.read_text(errors="ignore")
     )
 
@@ -83,6 +90,16 @@ def selftest() -> int:
         assert docs_mentioning("fact_orders", refs) == ["orders.md"]
         assert docs_mentioning("fact_widgets", refs) == []
         assert docs_mentioning("fact_orders", refs / "nope") == []
+
+        # folder-shaped domain doc: the mention can live in SKILL.md or references/
+        (refs / "marketing" / "references").mkdir(parents=True)
+        (refs / "marketing" / "SKILL.md").write_text("no mention here")
+        (refs / "marketing" / "references" / "marketing.md").write_text(
+            "### `analytics.core.fact_campaigns`"
+        )
+        assert docs_mentioning("fact_campaigns", refs) == [
+            "marketing/references/marketing.md"
+        ]
     print("selftest ok")
     return 0
 

@@ -1,36 +1,4 @@
-# Marketing & Attribution Tables
-
-## Quick Reference
-
-### Business Context
-Paid and organic acquisition: spend, campaigns, touchpoints, and the revenue credited to
-them. Attribution is a *model*, not a fact — every number in this domain is "revenue
-under model X", and the model must be named in the answer.
-
-### Entity Grain
-`fact_marketing_spend` = one row per campaign per day per platform.
-`dim_marketing_touch` = one row per touchpoint per customer. A conversion has many
-touches; the attribution model decides how credit is split across them.
-
-### Standard Hygiene Filter
-```sql
-WHERE is_test_campaign = false
-  AND spend_usd >= 0          -- platform refunds arrive as negative rows
-```
-Negative spend rows are real credits from ad platforms. Keep them in *spend totals*, drop
-them from CPC/CPM ratios — they make the denominator meaningless.
-
-### Ownership & Freshness
-- **Owner**: growth-analytics (attribution model changes are theirs to approve)
-- **Refresh**: daily, but platform spend backfills for ~3 days and attribution re-runs
-  nightly — a number pulled today can move tomorrow. Anchor on `MAX(spend_date)`.
-
-## Metrics (tier 1 — required first resort)
-
-**No metric view covers this domain.** `sem_orders` ([`metrics.md`](metrics.md)) is
-orders-only and carries no spend or attribution. Tier 2 — the governed tables below — is
-the top of the ladder here, so say `governed table` in the provenance footer and name the
-attribution model in the answer.
+<!-- reference detail for marketing/SKILL.md -->
 
 ## Dimensions
 
@@ -58,7 +26,7 @@ attribution model in the answer.
   **IF the question is about attributed or channel-credited revenue → use this.
   DO NOT use it for total company revenue** — unattributed orders (~20%) have no row
   here, so it under-reports `fact_orders` and always will. Total revenue is
-  [`orders.md`](orders.md).
+  [`../../orders/SKILL.md`](../../orders/SKILL.md).
 - Always filter `attribution_model = 'last_touch'` unless the asker named another.
 
 ### `analytics.marketing.dim_marketing_touch`
@@ -76,9 +44,10 @@ attribution model in the answer.
 - **Touch fan-out.** Joining `dim_marketing_touch` to orders multiplies revenue by the
   touch count. If ROAS looks 4x better than usual, check this first.
 - **Organic has no spend row.** Channel-share and blended-CAC denominators must come from
-  [`orders.md`](orders.md), not from this domain's tables.
+  [`../../orders/SKILL.md`](../../orders/SKILL.md), not from this domain's tables.
 - **CAC denominator.** New customers, not orders, not attributed orders. The
-  `new_customers` segment in [`metrics.md`](metrics.md) is the governed population.
+  `new_customers` segment in [`../../metrics.md`](../../metrics.md) is the governed
+  population.
 - **Platform lag.** Spend restates for ~72h after the fact. Anchor on `MAX(spend_date)`
   and caveat anything inside that window.
 
@@ -93,5 +62,5 @@ attribution model in the answer.
 
 ## Cross-References
 
-- Total revenue, GMV, AOV, refunds → [`orders.md`](orders.md)
-- Metric and segment definitions → [`metrics.md`](metrics.md)
+- Total revenue, GMV, AOV, refunds → [`../../orders/SKILL.md`](../../orders/SKILL.md)
+- Metric and segment definitions → [`../../metrics.md`](../../metrics.md)

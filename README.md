@@ -128,7 +128,8 @@ analytics-marketplace/             ← the behaviour: install it, don't fork it
 
 analytics/                         ← the knowledge: this is the part you replace
   references/INDEX.md              the router — read before any query
-  references/*.md                  one doc per business domain
+  references/<domain>/SKILL.md     one skill per business domain (Claude-Skill-shaped)
+  references/<domain>/references/  that domain's deep detail, loaded only on demand
   evals/*.jsonl                    offline evals, graded on the query and the tier
   fixtures/seed.py                 builds the demo warehouse, asserts the docs are true
   examples/                        sample Genie spaces + what the migrator makes of them
@@ -176,8 +177,8 @@ reference docs, QA a finished analysis, run and ablate the eval suite. Details i
 
 ## What makes this more than a template
 
-- **The fixture warehouse asserts the docs are true.** Every numeric claim in
-  `analytics/references/*.md` — "the hygiene filter is worth ~5% of GMV", "attributed
+- **The fixture warehouse asserts the docs are true.** Every numeric claim in a domain's
+  `SKILL.md` or `references/*.md` — "the hygiene filter is worth ~5% of GMV", "attributed
   revenue runs ~20% low" — is checked against seeded data on every build. Doc rot becomes
   a failing test.
 - **Every gotcha is physically reproducible.** Skip the hygiene filter and GMV overstates
@@ -185,8 +186,8 @@ reference docs, QA a finished analysis, run and ablate the eval suite. Details i
   count `user_id` and you get 666 customers instead of 400.
 - **Migration output is compared before/after.**
   [`analytics/examples/migrated/`](analytics/README.md) is what the migrator produced;
-  `analytics/references/orders.md` is the hand-finished version. The gap between them is
-  the human work a migration needs, in full view.
+  `analytics/references/orders/SKILL.md` is the hand-finished version. The gap between
+  them is the human work a migration needs, in full view.
 
 ## Honest status
 
