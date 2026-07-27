@@ -11,7 +11,8 @@
       | uv run migrate_genie.py - --domain orders
     uv run migrate_genie.py --selftest
 
-Writes analytics/references/<domain>.md and analytics/evals/<domain>.jsonl by default.
+Writes analytics/references/<domain>/{SKILL.md,reference.md} and
+analytics/evals/<domain>.jsonl by default.
 
 Accepts YAML or JSON, in any of the shapes Genie exports have used (serialized space,
 bundle .geniespace.json, or a space wrapped in a `serialized_space` key). Everything it
@@ -235,8 +236,12 @@ def skill_doc(domain: str, name: str, desc: str, tbls, rules, snippets) -> str:
     """SKILL.md — Claude-Skill-shaped: YAML frontmatter (name/description) plus Quick
     Reference and tier-1 metrics. This is the file the router opens for every candidate
     domain before picking one, so it stays short; the deep mechanics (dimensions, key
-    tables, gotchas, query patterns) live in references/<domain>.md and are opened only
-    for the domain that wins — progressive disclosure, same as any other Claude skill.
+    tables, gotchas, query patterns) live in the sibling reference.md and are opened
+    only for the domain that wins — progressive disclosure, same as any other Claude
+    skill. reference.md sits flat next to SKILL.md rather than in its own
+    references/ subfolder: per Anthropic's skill-authoring guidance, a nested
+    subfolder is for a skill with *multiple* distinct reference files (finance.md,
+    sales.md, ...); each domain here already has exactly one.
     """
     front = yaml.safe_dump(
         {"name": name or domain, "description": desc or TRIGGER_TODO},
@@ -315,16 +320,16 @@ def skill_doc(domain: str, name: str, desc: str, tbls, rules, snippets) -> str:
     L += [
         "## Full Detail",
         "",
-        f"Dimensions, key tables, blessed dashboards, gotchas and query patterns: "
-        f"[`references/{domain}.md`](references/{domain}.md).",
+        "Dimensions, key tables, blessed dashboards, gotchas and query patterns: "
+        "[`reference.md`](reference.md).",
         "",
     ]
     return "\n".join(L)
 
 
 def reference_md(domain: str, tbls, rules, snippets) -> str:
-    """references/<domain>.md — opened only once SKILL.md has won the routing
-    decision; everything here assumes the reader already has the Quick Reference."""
+    """reference.md — opened only once SKILL.md has won the routing decision;
+    everything here assumes the reader already has the Quick Reference."""
     # SKILL.md already surfaced this snippet as the Standard Hygiene Filter; skip it
     # here so the query pattern list doesn't repeat it as an ordinary "best practice".
     hygiene = next(
@@ -472,8 +477,8 @@ def main() -> int:
 
     domain_dir = args.out / domain
     skill_path = domain_dir / "SKILL.md"
-    ref_path = domain_dir / "references" / f"{domain}.md"
-    ref_path.parent.mkdir(parents=True, exist_ok=True)
+    ref_path = domain_dir / "reference.md"
+    domain_dir.mkdir(parents=True, exist_ok=True)
     skill_path.write_text(skill_doc(domain, name, desc, tbls, rules, snippets))
     ref_path.write_text(reference_md(domain, tbls, rules, snippets))
 
@@ -591,7 +596,7 @@ def selftest_v2() -> None:
     assert "Customer master data" in ref_md, "table description missing from reference"
     # SKILL.md is Claude-Skill-shaped: frontmatter, then a pointer to the deep detail
     assert md.startswith("---\nname: Sales\n"), "no frontmatter"
-    assert "references/sales.md" in md, "no pointer to the reference detail"
+    assert "reference.md" in md, "no pointer to the reference detail"
     # a space with no metric view still gets the tier-1 section, or the doc quietly
     # teaches the agent that governed tables are the top of the ladder
     assert "## Metrics (tier 1" in md and "no metric view" in md

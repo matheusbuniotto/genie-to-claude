@@ -38,5 +38,5 @@ is the top of the ladder here, so say `governed table` in the provenance footer 
 the attribution model in the answer.
 
 ## Full Detail
-See [`references/marketing.md`](references/marketing.md) for dimensions, key tables,
-gotchas and query patterns.
+See [`reference.md`](reference.md) for dimensions, key tables, gotchas and query
+patterns.

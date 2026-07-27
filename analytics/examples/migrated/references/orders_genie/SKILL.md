@@ -42,4 +42,4 @@ WHERE is_test = false AND order_status NOT IN ('cancelled', 'fraud_blocked')
 
 ## Full Detail
 
-Dimensions, key tables, blessed dashboards, gotchas and query patterns: [`references/orders_genie.md`](references/orders_genie.md).
+Dimensions, key tables, blessed dashboards, gotchas and query patterns: [`reference.md`](reference.md).

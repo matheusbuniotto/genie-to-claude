@@ -9,11 +9,10 @@ Bootstrap the `$ARGUMENTS` domain. Follow the `reference-doc` and `eval-loop` sk
    row counts, date ranges, enum values, obvious exclusions. Read whatever dbt/SQL models
    and column comments exist in the repo. Do not write a doc from the table names alone.
 2. **Draft `analytics/references/$ARGUMENTS/SKILL.md`** (frontmatter + Quick Reference +
-   tier-1 metrics) **and `analytics/references/$ARGUMENTS/references/$ARGUMENTS.md`**
-   (dimensions, key tables, gotchas, query patterns, cross-references) using the
-   `reference-doc` skill's skeleton. Every fact you could not verify goes in as `TODO`,
-   never as a plausible guess — a confident wrong line in a reference doc is worse than
-   no line.
+   tier-1 metrics) **and `analytics/references/$ARGUMENTS/reference.md`** (dimensions,
+   key tables, gotchas, query patterns, cross-references) using the `reference-doc`
+   skill's skeleton. Every fact you could not verify goes in as `TODO`, never as a
+   plausible guess — a confident wrong line in a reference doc is worse than no line.
 3. **Register it** in `analytics/references/INDEX.md` as a row linking `<domain>/SKILL.md`:
    use-for, do-NOT-use-for, and any term this domain adds to the disambiguation list.
 4. **Draft ~10 evals** in `analytics/evals/$ARGUMENTS.jsonl`: the questions stakeholders

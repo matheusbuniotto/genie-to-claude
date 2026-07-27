@@ -39,5 +39,5 @@ Measures, segments and their owners are in [`../metrics.md`](../metrics.md); the
 does *not* cover (item/category grain, attribution, marketing spend) are listed there too.
 
 ## Full Detail
-See [`references/orders.md`](references/orders.md) for dimensions, key tables, blessed
+See [`reference.md`](reference.md) for dimensions, key tables, blessed
 dashboards, gotchas and query patterns.

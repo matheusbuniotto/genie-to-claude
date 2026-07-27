@@ -26,7 +26,7 @@
   **IF the question is about attributed or channel-credited revenue → use this.
   DO NOT use it for total company revenue** — unattributed orders (~20%) have no row
   here, so it under-reports `fact_orders` and always will. Total revenue is
-  [`../../orders/SKILL.md`](../../orders/SKILL.md).
+  [`../orders/SKILL.md`](../orders/SKILL.md).
 - Always filter `attribution_model = 'last_touch'` unless the asker named another.
 
 ### `analytics.marketing.dim_marketing_touch`
@@ -44,9 +44,9 @@
 - **Touch fan-out.** Joining `dim_marketing_touch` to orders multiplies revenue by the
   touch count. If ROAS looks 4x better than usual, check this first.
 - **Organic has no spend row.** Channel-share and blended-CAC denominators must come from
-  [`../../orders/SKILL.md`](../../orders/SKILL.md), not from this domain's tables.
+  [`../orders/SKILL.md`](../orders/SKILL.md), not from this domain's tables.
 - **CAC denominator.** New customers, not orders, not attributed orders. The
-  `new_customers` segment in [`../../metrics.md`](../../metrics.md) is the governed
+  `new_customers` segment in [`../metrics.md`](../metrics.md) is the governed
   population.
 - **Platform lag.** Spend restates for ~72h after the fact. Anchor on `MAX(spend_date)`
   and caveat anything inside that window.
@@ -62,5 +62,5 @@
 
 ## Cross-References
 
-- Total revenue, GMV, AOV, refunds → [`../../orders/SKILL.md`](../../orders/SKILL.md)
-- Metric and segment definitions → [`../../metrics.md`](../../metrics.md)
+- Total revenue, GMV, AOV, refunds → [`../orders/SKILL.md`](../orders/SKILL.md)
+- Metric and segment definitions → [`../metrics.md`](../metrics.md)

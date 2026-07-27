@@ -88,10 +88,12 @@ def check_router(refs: Path) -> list[str]:
 def check_sections(refs: Path) -> list[str]:
     """Domain docs must carry the skeleton. Catalogs and indexes opt out explicitly.
 
-    A domain doc is either a flat file (legacy) or a folder with `SKILL.md` plus
-    `references/*.md` — the skeleton's required sections are checked across whichever
-    files that domain actually has, since progressive disclosure means a section like
-    Key Tables now lives in references/, not SKILL.md.
+    A domain doc is either a flat file (legacy) or a folder with `SKILL.md` plus a
+    flat `reference.md` sibling (Anthropic's skill-authoring guidance: one reference
+    file sits next to SKILL.md, not nested in its own subfolder) — the skeleton's
+    required sections are checked across whichever files that domain actually has,
+    since progressive disclosure means a section like Key Tables now lives in
+    reference.md, not SKILL.md.
     """
     bad = []
     for doc in sorted(refs.glob("*.md")):
@@ -105,8 +107,9 @@ def check_sections(refs: Path) -> list[str]:
         text = skill.read_text()
         if OPT_OUT in text:
             continue
-        for ref in sorted(skill.parent.glob("references/*.md")):
-            text += "\n" + ref.read_text()
+        for ref in sorted(skill.parent.glob("*.md")):
+            if ref.name != "SKILL.md":
+                text += "\n" + ref.read_text()
         missing = [s for s in REQUIRED_SECTIONS if s not in text]
         if missing:
             bad.append(f"{skill.parent.name}/ missing section(s): {', '.join(missing)}")
@@ -160,11 +163,11 @@ def selftest() -> int:
             "[metrics](metrics.md)\n[orders](orders/SKILL.md)"
         )
         (refs / "metrics.md").write_text("catalog\n" + OPT_OUT)
-        (refs / "orders" / "references").mkdir(parents=True)
+        (refs / "orders").mkdir(parents=True)
         (refs / "orders" / "SKILL.md").write_text(
             "---\nname: orders\ndescription: test\n---\n## Entity Grain"
         )
-        (refs / "orders" / "references" / "orders.md").write_text(
+        (refs / "orders" / "reference.md").write_text(
             "## Key Tables\n## Gotchas\n## Cross-References"
         )
         (evals / "orders.jsonl").write_text(
@@ -183,15 +186,15 @@ def selftest() -> int:
         assert check_sections(refs) == [], check_sections(refs)
 
         # an unregistered domain folder is invisible to the agent
-        (refs / "orphan" / "references").mkdir(parents=True)
+        (refs / "orphan").mkdir(parents=True)
         (refs / "orphan" / "SKILL.md").write_text("## Entity Grain")
-        (refs / "orphan" / "references" / "x.md").write_text(
+        (refs / "orphan" / "reference.md").write_text(
             "## Key Tables\n## Gotchas\n## Cross-References"
         )
         assert len(check_router(refs)) == 1, check_router(refs)
 
-        # a domain missing skeleton sections is flagged, across SKILL.md + references/
-        (refs / "thin" / "references").mkdir(parents=True)
+        # a domain missing skeleton sections is flagged, across SKILL.md + reference.md
+        (refs / "thin").mkdir(parents=True)
         (refs / "thin" / "SKILL.md").write_text("## Key Tables")
         assert any("thin" in p for p in check_sections(refs))
 

@@ -5,9 +5,9 @@ in the repo next to the models it describes. The behaviour that reads it ships i
 [`../analytics-marketplace/`](../analytics-marketplace/README.md).
 
 ```
-references/INDEX.md          the router: domain map + terms that must be disambiguated
-references/<domain>/SKILL.md            one skill per business domain (grain, hygiene filter, tier-1 metrics)
-references/<domain>/references/*.md     that domain's deep detail (key tables, gotchas, patterns)
+references/INDEX.md               the router: domain map + terms that must be disambiguated
+references/<domain>/SKILL.md      one skill per business domain (grain, hygiene filter, tier-1 metrics)
+references/<domain>/reference.md  that domain's deep detail (key tables, gotchas, patterns)
 evals/*.jsonl                offline evals, graded on the query and the tier, not the number
 evals/results.jsonl          appended by every eval run — telemetry, load it into a table
 evals/NEGATIVE-RESULTS.md    ablations that came back flat, so nobody re-runs them
@@ -67,7 +67,7 @@ It does two things:
    it by 19.7%, counting `user_id` reports 666 customers instead of 400, and a naive
    `dim_customer` join inflates revenue by 66%.
 2. **Asserts the reference docs are true.** Every numeric claim in a domain's `SKILL.md`
-   or `references/*.md` is checked against the data. Change a doc's percentage without
+   or `reference.md` is checked against the data. Change a doc's percentage without
    changing the warehouse and the seed script fails — which is the documentation rot the
    whole system exists to catch, turned into an assertion.
 

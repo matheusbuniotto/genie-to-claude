@@ -17,13 +17,16 @@ rot: unmaintained, accuracy drifts from ~95% to ~65% in about a month.
 ## Rules
 
 - **One skill-folder per business domain**, named for the domain:
-  `analytics/references/orders/SKILL.md` + `analytics/references/orders/references/orders.md`
+  `analytics/references/orders/SKILL.md` + `analytics/references/orders/reference.md`
   — or wherever `CLAUDE.md` says the project keeps them. A few dozen domains is the
   expected steady state. This is a real Claude Skill shape (YAML frontmatter,
   progressive disclosure) — `SKILL.md` is what the router scans across every candidate
-  domain, so it stays short; `references/<domain>.md` holds the deep mechanics
-  (dimensions, key tables, gotchas, query patterns) and is opened only for the one
-  domain that wins the routing decision.
+  domain, so it stays short; `reference.md` holds the deep mechanics (dimensions, key
+  tables, gotchas, query patterns) and is opened only for the one domain that wins the
+  routing decision. `reference.md` sits flat next to `SKILL.md`, not nested in its own
+  subfolder — per Anthropic's skill-authoring guidance, a nested `references/`
+  subfolder is for a skill with *multiple* distinct reference files; one domain here
+  has exactly one.
 - **Every doc is registered** in `analytics/references/INDEX.md` as a row linking
   `<domain>/SKILL.md`, with a "use for" and a "do NOT use for". The INDEX is the router;
   an unregistered doc is invisible.
@@ -66,12 +69,12 @@ description: "IF the question is about [X] -> use this. DO NOT use for [Y] (-> o
   and the questions it answers without raw SQL. If none exists, say so explicitly.]
 
 ## Full Detail
-See references/[domain].md for dimensions, key tables, blessed dashboards, gotchas and
-query patterns.
+See reference.md for dimensions, key tables, blessed dashboards, gotchas and query
+patterns.
 ```
 
-`references/[domain].md` — opened only once `SKILL.md` has won the routing decision;
-everything here assumes the reader already has the Quick Reference:
+`reference.md` (flat, next to `SKILL.md`) — opened only once `SKILL.md` has won the
+routing decision; everything here assumes the reader already has the Quick Reference:
 
 ```markdown
 ## Dimensions
@@ -99,7 +102,7 @@ everything here assumes the reader already has the Quick Reference:
 ```
 
 A domain small enough that this split feels like busywork can keep everything in
-`SKILL.md` and skip `references/` — the folder exists for when Key Tables + Gotchas
+`SKILL.md` and skip `reference.md` — the split exists for when Key Tables + Gotchas
 would otherwise bloat the file the router scans for every unrelated question too.
 
 ## Writing each section well

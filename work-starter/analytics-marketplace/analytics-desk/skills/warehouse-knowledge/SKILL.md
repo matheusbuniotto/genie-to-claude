@@ -19,7 +19,7 @@ and live in the repo next to the models they describe.
    disambiguated before querying. If `CLAUDE.md` names a different path, use that.
 2. From the map, open the **one** domain's `SKILL.md` that owns the question (frontmatter
    + Quick Reference + tier-1 metrics — enough to route and apply the hygiene filter).
-   Only pull in that domain's `references/<domain>.md` (key tables, gotchas, query
+   Only pull in that domain's sibling `reference.md` (key tables, gotchas, query
    patterns) once it's the winner — reading it for every candidate domain defeats the
    point of a short, scannable `SKILL.md`. Open a second domain only if the question
    genuinely spans domains.

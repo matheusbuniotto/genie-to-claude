@@ -63,9 +63,9 @@ is unmaintained in the answer.
 
 ## Cross-References
 
-- Attributed revenue, ROAS, CAC, campaign cuts → [`../../marketing/SKILL.md`](../../marketing/SKILL.md).
+- Attributed revenue, ROAS, CAC, campaign cuts → [`../marketing/SKILL.md`](../marketing/SKILL.md).
   Attributed revenue is ~20% below total revenue by construction; do not substitute one
   for the other.
-- Metric and segment definitions → [`../../metrics.md`](../../metrics.md)
+- Metric and segment definitions → [`../metrics.md`](../metrics.md)
 - Subscription/recurring revenue and customer lifecycle are **not documented yet**. Say so
   rather than answering from `fact_orders` — recurring revenue is not in this domain.
