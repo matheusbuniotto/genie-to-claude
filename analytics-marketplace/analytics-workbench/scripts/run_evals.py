@@ -117,7 +117,7 @@ def grade(eval_case: dict, response: str, gold: list[float] | None = None) -> di
     }
 
 
-def ask(question: str, model: str, agent_cmd: str | None) -> tuple[str, dict]:
+def ask(question: str, model: str | None, agent_cmd: str | None) -> tuple[str, dict]:
     """One agent turn, in the repo root so the project's reference docs are in scope.
 
     `agent_cmd` swaps the agent out: any shell command that reads the question on stdin
@@ -139,12 +139,10 @@ def ask(question: str, model: str, agent_cmd: str | None) -> tuple[str, dict]:
             else f"<error> {proc.stderr.strip()[:500]}"
         ), {}
 
-    proc = subprocess.run(
-        ["claude", "-p", question, "--output-format", "json", "--model", model],
-        capture_output=True,
-        text=True,
-        timeout=600,
-    )
+    cmd = ["claude", "-p", question, "--output-format", "json"]
+    if model:
+        cmd += ["--model", model]
+    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
     if proc.returncode != 0:
         return f"<error> {proc.stderr.strip()[:500]}", {}
     try:
@@ -171,7 +169,9 @@ def docs_version() -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("files", nargs="*", default=[str(EVALS_DIR / "*.jsonl")])
-    ap.add_argument("--model", default="claude-opus-5")
+    ap.add_argument(
+        "--model", help="pin a model; omit to use the claude CLI's own default"
+    )
     ap.add_argument("--filter", help="only run eval ids matching this regex")
     ap.add_argument(
         "--agent-cmd",
@@ -210,6 +210,12 @@ def main() -> int:
     if not cases:
         print("no eval cases matched", file=sys.stderr)
         return 1
+
+    who = args.agent_cmd or f"claude CLI ({args.model or 'default model'})"
+    print(
+        f"running {len(cases)} case(s) against {who} — real calls, not a dry run",
+        file=sys.stderr,
+    )
 
     passed = 0
     checked = 0

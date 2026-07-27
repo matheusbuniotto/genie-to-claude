@@ -1,15 +1,22 @@
 ---
 description: Bring a Databricks Genie space into Claude — its tables, synonyms and instructions become a reference doc and an eval set, then you fill the gaps Genie has no field for.
-argument-hint: [a Genie space id, or a path to an exported yml/json]
+argument-hint: [a Genie space id, a Genie room URL, or a path to an exported yml/json]
 allowed-tools: Bash, Read, Edit, Write, Glob, Grep
 ---
 
 Migrate the Genie space **$ARGUMENTS**.
 
-1. **Get the space.** If the argument looks like a file path, use it. Otherwise export it:
+1. **Get the space.** Work out what `$ARGUMENTS` actually is before touching the API:
+   - **A file path** (exists on disk) — use it directly, skip the export.
+   - **A Genie room URL**, e.g. `https://<host>/genie/rooms/<space_id>?o=<workspace_id>` —
+     the space id is the path segment right after `/rooms/`; the `?o=` query param is the
+     *workspace* id, not part of the space id. Extract `<space_id>` before calling the API.
+     Pasting the browser URL as-is into the path below produces a garbled, 404-ing request —
+     don't do that.
+   - **A bare space id** — use it directly.
 
 ```bash
-databricks api get "/api/2.0/genie/spaces/$ARGUMENTS?include_serialized_space=true" \
+databricks api get "/api/2.0/genie/spaces/<space_id>?include_serialized_space=true" \
   > /tmp/genie-space.json
 ```
 

@@ -27,7 +27,7 @@ from pathlib import Path
 
 import yaml
 
-TABLE_RE = re.compile(r"\b[a-z_][\w]*\.[a-z_][\w]*\.[a-z_][\w]*\b", re.I)
+TABLE_RE = re.compile(r"`?([a-z_]\w*)`?\.`?([a-z_]\w*)`?\.`?([a-z_]\w*)`?", re.I)
 
 
 # --- parsing: tolerate every export shape ------------------------------------------
@@ -73,7 +73,14 @@ def load(raw: str, base: Path | None = None, space: str | None = None) -> dict:
     for key in ("serialized_space", "space", "genie_space"):
         if isinstance(doc.get(key), (str, dict)):
             inner = doc[key]
-            doc = yaml.safe_load(inner) if isinstance(inner, str) else inner
+            inner = yaml.safe_load(inner) if isinstance(inner, str) else inner
+            # the live API's title/description sit beside serialized_space, not in it
+            if isinstance(inner, dict):
+                cfg = inner.setdefault("config", {})
+                if isinstance(cfg, dict):
+                    cfg.setdefault("name", doc.get("title") or doc.get("display_name"))
+                    cfg.setdefault("description", doc.get("description"))
+            doc = inner
     return doc
 
 
@@ -131,16 +138,20 @@ def tables(doc: dict) -> list[dict]:
 
 def split_rules(body: str) -> list[str]:
     """One bullet per rule. Genie free-text is hand-wrapped, so a line following one
-    that didn't end a sentence is a continuation, not a new rule."""
+    that didn't end a sentence is a continuation, not a new rule — unless the line is
+    itself a markdown bullet, which always starts a new rule regardless of punctuation."""
     rules: list[str] = []
     for line in str(body).splitlines():
         line = line.strip()
         if not line:
             continue
-        if rules and not rules[-1].endswith((".", "!", "?", ":")):
-            rules[-1] = f"{rules[-1]} {line}"
-        else:
+        is_bullet = line.startswith(("* ", "- ", "• "))
+        if is_bullet:
+            line = line[2:].strip()
+        if is_bullet or not rules or rules[-1].endswith((".", "!", "?", ":")):
             rules.append(line)
+        else:
+            rules[-1] = f"{rules[-1]} {line}"
     return rules
 
 
@@ -192,7 +203,10 @@ def benchmarks(doc: dict) -> list[tuple[str, str]]:
     examples = (ins.get("example_question_sqls") or []) if isinstance(ins, dict) else []
     for ex in examples:
         out.append((text(ex.get("question")), text(ex.get("sql"))))
-    for bench in doc.get("benchmarks") or []:
+    raw_benchmarks = doc.get("benchmarks") or []
+    if isinstance(raw_benchmarks, dict):  # v2 wraps the list under "questions"
+        raw_benchmarks = raw_benchmarks.get("questions") or []
+    for bench in raw_benchmarks:
         sql = ""
         for answer in bench.get("answer") or []:
             sql = text(answer.get("content"))
@@ -357,7 +371,7 @@ def reference_doc(domain: str, name: str, desc: str, tbls, rules, snippets) -> s
 
 
 def eval_case(domain: str, idx: int, question: str, gold_sql: str) -> dict:
-    refs = sorted(set(TABLE_RE.findall(gold_sql)))
+    refs = sorted({".".join(m) for m in TABLE_RE.findall(gold_sql)})
     case = {
         "id": f"{domain}-{idx:03d}",
         "domain": domain,
@@ -537,8 +551,78 @@ def selftest_v2() -> None:
     assert case["must_include"] == ["sales.analytics.customers"], case
 
 
+# The exact envelope `databricks api get .../genie/spaces/$ID?include_serialized_space=true`
+# returns: title/description are siblings of serialized_space, not inside it; benchmarks
+# wraps its list under "questions"; free-text rules are markdown bullets; gold SQL is
+# backtick-quoted. selftest_v2 above missed all four because its fixture skips the outer
+# envelope and never uses backticks or bullets.
+LIVE_API = json.dumps(
+    {
+        "title": "Bakehouse Sales Starter Space",
+        "description": "fictional bakery sales and inventory data",
+        "warehouse_id": "w1",
+        "serialized_space": json.dumps(
+            {
+                "version": 2,
+                "config": {},
+                "data_sources": {
+                    "tables": [{"identifier": "samples.bakehouse.sales_transactions"}]
+                },
+                "instructions": {
+                    "text_instructions": [
+                        {
+                            "content": [
+                                "* Always include franchise name with franchise ID\n",
+                                "* Fiscal year starts in February\n",
+                            ]
+                        }
+                    ]
+                },
+                "benchmarks": {
+                    "questions": [
+                        {
+                            "question": ["Top product?"],
+                            "answer": [
+                                {
+                                    "format": "SQL",
+                                    "content": [
+                                        "SELECT `product` FROM "
+                                        "`samples`.`bakehouse`.`sales_transactions`"
+                                    ],
+                                }
+                            ],
+                        }
+                    ]
+                },
+            }
+        ),
+    }
+)
+
+
+def selftest_live_api() -> None:
+    doc = load(LIVE_API)
+    name, desc = space_meta(doc)
+    assert name == "Bakehouse Sales Starter Space", name
+    assert desc == "fictional bakery sales and inventory data", desc
+
+    rules, _ = instructions(doc)
+    assert rules == [
+        "Always include franchise name with franchise ID",
+        "Fiscal year starts in February",
+    ], rules
+
+    benches = benchmarks(doc)
+    assert benches[0][0] == "Top product?", benches
+    assert "sales_transactions" in benches[0][1], benches
+
+    case = eval_case("bakehouse", 1, *benches[0])
+    assert case["must_include"] == ["samples.bakehouse.sales_transactions"], case
+
+
 def selftest() -> int:
     selftest_v2()
+    selftest_live_api()
     doc = load(SAMPLE)
     name, desc = space_meta(doc)
     assert (name, desc) == ("Orders", "order questions"), (name, desc)
