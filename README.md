@@ -64,6 +64,54 @@ agent seeds the fixture warehouse itself if it's missing.
 **Going to production →** [`work-starter/`](work-starter/README.md) is a self-contained
 folder to drop into a work repo: an empty content skeleton and seven steps.
 
+## Cheatsheet
+
+| Command | Plugin | What it does |
+|---|---|---|
+| `/analytics-workbench:migrate-genie <space-id\|url\|file>` | workbench | Genie space → reference doc + eval set + counted `TODO`s |
+| `/analytics-workbench:new-domain <name>` | workbench | bootstrap a hand-authored domain from the real tables, no Genie involved |
+| `/analytics-workbench:check-setup` | workbench | free repo-invariant gate: router registered, evals well-formed, links resolve |
+| `/analytics-workbench:run-evals [slice] [parity]` | workbench | grade the agent against the eval set; add `parity` to check the *numbers* |
+| `/analytics-workbench:review-analysis <target>` | workbench | adversarial QA of a finished analysis; reports `DOC GAP`s to fix |
+| `/analytics-workbench:package-skills [domain]` | workbench | zip domain Skills (+ a router) for claude.ai / Claude Desktop upload |
+| `/analytics-desk:ask <question>` | desk | ask the warehouse; tier-routed, adversarially reviewed, provenance-footed |
+| `/analytics-desk:what-can-i-ask` | desk | list documented domains and what the agent will decline, in plain language |
+
+**The loop, in order:** migrate-genie (or new-domain) → close TODOs → check-setup →
+run-evals (add `parity` right after a migration) → ask, or package-skills to hand it off.
+
+## How to share this with a team
+
+Two audiences, two mechanisms — don't force one into the other.
+
+**A team with Claude Code and GitHub access.** Reference docs are **project-owned
+files**, not plugin content — `analytics/references/` lives in *your* repo next to the
+models it describes, so sharing it is exactly as hard as sharing any other file: commit
+it, PR it. If one team authors for several consuming repos, have each consuming repo
+pull the folder via a git submodule or subtree pinned to a commit, and bump the pin like
+any other dependency update. Neither plugin needs reinstalling — only the content
+underneath changes.
+
+**A team on claude.ai / Claude Desktop only — no GitHub, no Claude Code.**
+
+```
+/analytics-workbench:package-skills
+```
+
+Zips every domain into an upload-ready Skill (`orders.zip`, `marketing.zip`, ...) plus a
+`warehouse-router.zip` built from `INDEX.md`, so multiple uploaded Skills still funnel
+through one router instead of competing on their own descriptions the way domains
+normally would with nothing like `warehouse-knowledge` to fence them. Send the zips to
+the business team; each gets uploaded once under **Settings → Capabilities → Skills** —
+claude.ai and Claude Desktop share an account, so one upload covers both surfaces.
+
+This carries over the routing knowledge (hygiene filter, tier, gotchas) but not
+`analytics-desk`'s adversarial `sql-reviewer` or provenance footer, since those need
+Claude Code's subagents and neither surface runs them. If a domain needs to actually
+query the warehouse from claude.ai/Desktop, confirm an MCP connector (e.g. Databricks) is
+enabled on that account first — a Skill can route and state the hygiene filter; only the
+connector runs SQL.
+
 ## The migration, end to end
 
 | Step | Command | What you get |

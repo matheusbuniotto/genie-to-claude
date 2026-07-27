@@ -125,6 +125,15 @@ They don't have to learn any of that up front — the `analytics-help` skill exp
 footer, a clarifying question, or a declined answer whenever someone asks. Point them at
 `/analytics-desk:what-can-i-ask` on day one and let the rest arrive when it's needed.
 
+**No Claude Code, no GitHub — just claude.ai / Claude Desktop?** Run
+`/analytics-workbench:package-skills` instead. It zips every domain (plus a router built
+from `INDEX.md`, so domains don't compete on their own descriptions once uploaded
+standalone) into Skills the business team uploads themselves under **Settings →
+Capabilities → Skills** — one upload covers both surfaces, since they share an account.
+This carries the routing knowledge over, but not the `sql-reviewer` subagent or
+provenance footer, since those need Claude Code; if a domain needs to actually query the
+warehouse from there, confirm an MCP connector is enabled on that account first.
+
 ## 7. Keep it alive
 
 Unmaintained, this decays fast: measured accuracy drifts from ~95% to ~65% in about a
