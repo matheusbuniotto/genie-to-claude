@@ -10,6 +10,10 @@ Run the offline evals. Follow the `eval-loop` skill.
 python3 ${CLAUDE_PLUGIN_ROOT}/scripts/run_evals.py ${ARGUMENTS:+--filter "$ARGUMENTS"}
 ```
 
+`$ARGUMENTS` is just the regex slice itself (e.g. `^orders-`), never the `--filter` flag —
+passing `--filter '^orders-'` here double-wraps it into `--filter "--filter '^orders-'"`,
+which matches nothing.
+
 If the arguments mention **parity**, add number parity — the gold SQL came from the
 system being replaced, so this is the run that says whether the migration preserved the
 answers. Take the SQL command from the connection ladder in `CLAUDE.md`:
