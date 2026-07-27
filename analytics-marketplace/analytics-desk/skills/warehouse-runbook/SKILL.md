@@ -20,6 +20,11 @@ Establish the connection **before** writing SQL, in this order:
    and authenticated. Check `CLAUDE.md` for the default catalog/project.
 3. **Neither** → tell the user which one to set up, and **stop**.
 
+Auth checks, warehouse discovery, and schema lookups (`DESCRIBE`, catalog listing) are
+plumbing: run them, don't narrate each step, and never paste raw CLI/API/JSON output into
+the reply. Surface a step only if it fails or returns something surprising — that's a
+finding, not noise.
+
 Step 3 is not a formality. With no connection there is no answer, and the failure mode is
 an agent that writes plausible SQL and then narrates a plausible result. Do not describe
 what the query "would return". Do not estimate. Return the SQL, say it is unexecuted, and
@@ -48,7 +53,21 @@ way to a number.
 7. **Adversarial review (MANDATORY).** Spawn the `sql-reviewer` subagent on the query
    before showing any number. Blocking findings get fixed and re-reviewed. Never
    self-certify. Costs roughly +30% tokens and +70% latency; it is worth it.
-8. **Report with provenance.** Every answer ends with the footer below.
+8. **Report.** The reader is a stakeholder, not an analyst — write for them by default,
+   keep the analyst detail one request away.
+
+**By default:**
+- Plain-English headline sentence + the table/number. Skimmable in 5 seconds. No analyst
+  jargon in reader-facing text — "inner join," "hygiene filter," "tier 2 governed table,"
+  "reviewer round" stay out.
+- One-line footer, plain words: what was checked, how fresh, whether it's safe to forward.
+  e.g. `Checked against the orders table, current as of <date>. Safe to share.` or, when a
+  caveat applies, fold it into that same line instead of a separate one:
+  `⚠️ Built from a raw table, not an official metric — verify with <owner> before forwarding.`
+  `⚠️ <period> is still moving; this number will change.`
+
+**On request, or when the caveat *is* the finding** (e.g. it changes what the number
+means): give the full technical footer —
 
 ```
 > **Source:** semantic layer | governed table | raw exploration ·
@@ -58,18 +77,12 @@ way to a number.
 > **Owner:** <owning team>
 ```
 
-Add one plain-language line under the footer whenever the answer needs handling — and
-only then, or it becomes wallpaper the reader stops seeing:
+— plus join logic, filters, and reviewer round.
 
-- raw exploration → `⚠️ No official definition covered this. Verify with <owner> before
-  forwarding.`
-- the period isn't closed, or the data settles late → `⚠️ <period> is still moving; this
-  number will change.`
-- low confidence, or an assumption you had to make → state the assumption in that line,
-  not only in the body.
-
-The reader usually cannot check the number. The footer is what tells them how much weight
-it carries; a caveat buried in a paragraph does not survive being pasted into Slack.
+The reader usually cannot check the number, so the footer is what tells them how much
+weight it carries — but the analyst provenance block is wallpaper to someone who can't
+parse it. Rigor is unchanged: clarify → route via `warehouse-knowledge` → query →
+mandatory `sql-reviewer` pass happens every time regardless of which footer ships.
 
 ## Reporting rules
 

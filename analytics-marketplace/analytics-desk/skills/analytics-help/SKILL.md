@@ -20,7 +20,10 @@ rather than guessed at. A person who knows the boundary stops trusting answers o
 
 ## Reading the footer
 
-Every answer ends with one. Translate it on request:
+By default every answer ends with one plain-language line — what was checked, how fresh,
+whether it's safe to forward. The full technical footer (source/confidence/reviewer/
+freshness/owner) only shows up on request, or when a caveat is itself the finding. Ask for
+"the full footer" or "the technical detail" to see it. Translate either on request:
 
 | Field | What it means for them |
 |---|---|
