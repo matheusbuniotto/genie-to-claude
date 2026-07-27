@@ -1,41 +1,4 @@
-# Orders & Revenue Tables
-
-<!-- migrated from a Genie space by migrate_genie.py.
-     TODO markers are what Genie has no field for — a human fills them in. -->
-
-## Quick Reference
-
-### Use For / Do NOT Use For
-TODO: the routing trigger — 'IF the question is about X → use this doc. DO NOT
-use for Y (→ other-domain.md).' Without it the router can't tell this doc apart
-from its neighbours, which is the retrieval failure this doc exists to prevent.
-
-### Business Context
-Marketplace order and revenue questions for the growth and finance teams.
-
-### Entity Grain
-TODO: what one row of the primary table represents.
-
-### Standard Hygiene Filter
-```sql
-WHERE is_test = false AND order_status NOT IN ('cancelled', 'fraud_blocked')
-```
-
-### Ownership & Freshness
-- **Owner**: TODO (ask a human — no Genie field carries this)
-- **Refresh cadence / lag**: TODO · **Settles late?**: TODO
-
-<!-- the runbook's provenance footer prints Owner and Freshness verbatim; while
-     these say TODO, every answer from this domain ships unattributed. -->
-
-## Metrics (tier 1 — required first resort)
-
-### `analytics.core.revenue_metrics`
-- **Measures**: net_revenue, gmv, orders, aov, refund_rate
-- **Dimensions**: order_date, channel_code, country_iso2, customer_segment
-- **Named segments**: TODO (hand-rolling a WHERE clause that reproduces one
-  is the dominant wrong-answer mode)
-- **Owner**: TODO
+<!-- reference detail for orders_genie/SKILL.md -->
 
 ## Dimensions
 

@@ -8,8 +8,8 @@ invisible to the agent, so register it here the moment you create it.
 | Domain | Doc | Use for | Do NOT use for |
 |---|---|---|---|
 | Metrics catalog | [`metrics.md`](metrics.md) | any question naming a KPI; check here before opening a domain doc | table-level mechanics |
-| Orders & revenue | [`orders.md`](orders.md) | GMV, net revenue, AOV, refunds, order and item counts | attributed or channel-credited revenue (→ `marketing.md`) |
-| Marketing & attribution | [`marketing.md`](marketing.md) | spend, CPC, ROAS, CAC, channel and campaign performance, touch paths | total company revenue (→ `orders.md`) — attributed revenue is ~20% low by construction |
+| Orders & revenue | [`orders/SKILL.md`](orders/SKILL.md) | GMV, net revenue, AOV, refunds, order and item counts | attributed or channel-credited revenue (→ `marketing/SKILL.md`) |
+| Marketing & attribution | [`marketing/SKILL.md`](marketing/SKILL.md) | spend, CPC, ROAS, CAC, channel and campaign performance, touch paths | total company revenue (→ `orders/SKILL.md`) — attributed revenue is ~20% low by construction |
 
 <!-- one row per domain; a few dozen rows is the expected steady state -->
 

@@ -16,11 +16,20 @@ rot: unmaintained, accuracy drifts from ~95% to ~65% in about a month.
 
 ## Rules
 
-- **One doc per business domain**, named for the domain: `analytics/references/orders.md`
-  — or wherever `CLAUDE.md` says the project keeps them. A few dozen docs is the expected
-  steady state.
-- **Every doc is registered** in `analytics/references/INDEX.md` with a "use for" and a
-  "do NOT use for". The INDEX is the router; an unregistered doc is invisible.
+- **One skill-folder per business domain**, named for the domain:
+  `analytics/references/orders/SKILL.md` + `analytics/references/orders/reference.md`
+  — or wherever `CLAUDE.md` says the project keeps them. A few dozen domains is the
+  expected steady state. This is a real Claude Skill shape (YAML frontmatter,
+  progressive disclosure) — `SKILL.md` is what the router scans across every candidate
+  domain, so it stays short; `reference.md` holds the deep mechanics (dimensions, key
+  tables, gotchas, query patterns) and is opened only for the one domain that wins the
+  routing decision. `reference.md` sits flat next to `SKILL.md`, not nested in its own
+  subfolder — per Anthropic's skill-authoring guidance, a nested `references/`
+  subfolder is for a skill with *multiple* distinct reference files; one domain here
+  has exactly one.
+- **Every doc is registered** in `analytics/references/INDEX.md` as a row linking
+  `<domain>/SKILL.md`, with a "use for" and a "do NOT use for". The INDEX is the router;
+  an unregistered doc is invisible.
 - **Describe, don't prescribe.** Grain, scope, exclusions, join keys, required filters,
   and the mechanics of each gotcha. Step-by-step query recipes go stale and get copied
   wrong; a stated grain does not.
@@ -37,10 +46,19 @@ rot: unmaintained, accuracy drifts from ~95% to ~65% in about a month.
 
 ## Skeleton
 
+`SKILL.md` — short, frontmatter-led, scanned across every candidate domain before one
+is picked:
+
 ```markdown
+---
+name: [Domain]
+description: "IF the question is about [X] -> use this. DO NOT use for [Y] (-> other-domain/SKILL.md)."
+---
+
 # [Domain] Tables
 
 ## Quick Reference
+### Use For / Do NOT Use For — [the routing trigger, same substance as the description above]
 ### Business Context — [what this domain means in plain words]
 ### Entity Grain — [what one row represents]
 ### Standard Hygiene Filter — [the filter every query in this domain applies]
@@ -50,6 +68,15 @@ rot: unmaintained, accuracy drifts from ~95% to ~65% in about a month.
 - [The metric view / semantic-layer entry that covers this domain, its named segments,
   and the questions it answers without raw SQL. If none exists, say so explicitly.]
 
+## Full Detail
+See reference.md for dimensions, key tables, blessed dashboards, gotchas and query
+patterns.
+```
+
+`reference.md` (flat, next to `SKILL.md`) — opened only once `SKILL.md` has won the
+routing decision; everything here assumes the reader already has the Quick Reference:
+
+```markdown
 ## Dimensions
 - [How key dimensions are encoded, and where the same concept is named
   differently across tables]
@@ -73,6 +100,10 @@ rot: unmaintained, accuracy drifts from ~95% to ~65% in about a month.
 ## Cross-References
 - [Neighbouring domain docs that own adjacent questions]
 ```
+
+A domain small enough that this split feels like busywork can keep everything in
+`SKILL.md` and skip `reference.md` — the split exists for when Key Tables + Gotchas
+would otherwise bloat the file the router scans for every unrelated question too.
 
 ## Writing each section well
 

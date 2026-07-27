@@ -64,6 +64,54 @@ agent seeds the fixture warehouse itself if it's missing.
 **Going to production →** [`work-starter/`](work-starter/README.md) is a self-contained
 folder to drop into a work repo: an empty content skeleton and seven steps.
 
+## Cheatsheet
+
+| Command | Plugin | What it does |
+|---|---|---|
+| `/analytics-workbench:migrate-genie <space-id\|url\|file>` | workbench | Genie space → reference doc + eval set + counted `TODO`s |
+| `/analytics-workbench:new-domain <name>` | workbench | bootstrap a hand-authored domain from the real tables, no Genie involved |
+| `/analytics-workbench:check-setup` | workbench | free repo-invariant gate: router registered, evals well-formed, links resolve |
+| `/analytics-workbench:run-evals [slice] [parity]` | workbench | grade the agent against the eval set; add `parity` to check the *numbers* |
+| `/analytics-workbench:review-analysis <target>` | workbench | adversarial QA of a finished analysis; reports `DOC GAP`s to fix |
+| `/analytics-workbench:package-skills [domain]` | workbench | zip domain Skills (+ a router) for claude.ai / Claude Desktop upload |
+| `/analytics-desk:ask <question>` | desk | ask the warehouse; tier-routed, adversarially reviewed, provenance-footed |
+| `/analytics-desk:what-can-i-ask` | desk | list documented domains and what the agent will decline, in plain language |
+
+**The loop, in order:** migrate-genie (or new-domain) → close TODOs → check-setup →
+run-evals (add `parity` right after a migration) → ask, or package-skills to hand it off.
+
+## How to share this with a team
+
+Two audiences, two mechanisms — don't force one into the other.
+
+**A team with Claude Code and GitHub access.** Reference docs are **project-owned
+files**, not plugin content — `analytics/references/` lives in *your* repo next to the
+models it describes, so sharing it is exactly as hard as sharing any other file: commit
+it, PR it. If one team authors for several consuming repos, have each consuming repo
+pull the folder via a git submodule or subtree pinned to a commit, and bump the pin like
+any other dependency update. Neither plugin needs reinstalling — only the content
+underneath changes.
+
+**A team on claude.ai / Claude Desktop only — no GitHub, no Claude Code.**
+
+```
+/analytics-workbench:package-skills
+```
+
+Zips every domain into an upload-ready Skill (`orders.zip`, `marketing.zip`, ...) plus a
+`warehouse-router.zip` built from `INDEX.md`, so multiple uploaded Skills still funnel
+through one router instead of competing on their own descriptions the way domains
+normally would with nothing like `warehouse-knowledge` to fence them. Send the zips to
+the business team; each gets uploaded once under **Settings → Capabilities → Skills** —
+claude.ai and Claude Desktop share an account, so one upload covers both surfaces.
+
+This carries over the routing knowledge (hygiene filter, tier, gotchas) but not
+`analytics-desk`'s adversarial `sql-reviewer` or provenance footer, since those need
+Claude Code's subagents and neither surface runs them. If a domain needs to actually
+query the warehouse from claude.ai/Desktop, confirm an MCP connector (e.g. Databricks) is
+enabled on that account first — a Skill can route and state the hygiene filter; only the
+connector runs SQL.
+
 ## The migration, end to end
 
 | Step | Command | What you get |
@@ -122,13 +170,14 @@ analytics-marketplace/             ← the behaviour: install it, don't fork it
     skills/                        reference-doc, eval-loop, analytics-onboarding
     agents/analysis-reviewer       reviews a finished analysis, not just its SQL
     commands/                      migrate-genie, new-domain, check-setup,
-                                   run-evals, review-analysis
-    scripts/                       what the commands run (check, evals, migrator)
+                                   run-evals, review-analysis, package-skills
+    scripts/                       what the commands run (check, evals, migrator, packager)
     hooks/                         flags a model change whose doc wasn't touched
 
 analytics/                         ← the knowledge: this is the part you replace
   references/INDEX.md              the router — read before any query
-  references/*.md                  one doc per business domain
+  references/<domain>/SKILL.md     one skill per business domain (Claude-Skill-shaped)
+  references/<domain>/reference.md that domain's deep detail, loaded only on demand
   evals/*.jsonl                    offline evals, graded on the query and the tier
   fixtures/seed.py                 builds the demo warehouse, asserts the docs are true
   examples/                        sample Genie spaces + what the migrator makes of them
@@ -176,8 +225,8 @@ reference docs, QA a finished analysis, run and ablate the eval suite. Details i
 
 ## What makes this more than a template
 
-- **The fixture warehouse asserts the docs are true.** Every numeric claim in
-  `analytics/references/*.md` — "the hygiene filter is worth ~5% of GMV", "attributed
+- **The fixture warehouse asserts the docs are true.** Every numeric claim in a domain's
+  `SKILL.md` or `reference.md` — "the hygiene filter is worth ~5% of GMV", "attributed
   revenue runs ~20% low" — is checked against seeded data on every build. Doc rot becomes
   a failing test.
 - **Every gotcha is physically reproducible.** Skip the hygiene filter and GMV overstates
@@ -185,8 +234,8 @@ reference docs, QA a finished analysis, run and ablate the eval suite. Details i
   count `user_id` and you get 666 customers instead of 400.
 - **Migration output is compared before/after.**
   [`analytics/examples/migrated/`](analytics/README.md) is what the migrator produced;
-  `analytics/references/orders.md` is the hand-finished version. The gap between them is
-  the human work a migration needs, in full view.
+  `analytics/references/orders/SKILL.md` is the hand-finished version. The gap between
+  them is the human work a migration needs, in full view.
 
 ## Honest status
 

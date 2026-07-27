@@ -243,7 +243,7 @@ def verify(conn: sqlite3.Connection) -> None:
     """Assert the numeric claims the reference docs make. Doc drift fails here."""
     q = lambda sql: conn.execute(sql).fetchone()[0]  # noqa: E731
 
-    # references/orders.md: "omitting it inflates GMV by ~5%"
+    # references/orders/: "omitting it inflates GMV by ~5%"
     dirty = q("SELECT SUM(gross_merchandise_value_brl) FROM fact_orders")
     clean = q(
         f"SELECT SUM(gross_merchandise_value_brl) FROM fact_orders WHERE {HYGIENE}"
@@ -253,7 +253,7 @@ def verify(conn: sqlite3.Connection) -> None:
         f"hygiene-filter inflation is {inflation:.1%}, doc says ~5%"
     )
 
-    # references/orders.md: item revenue excludes shipping, so it must NOT match order revenue
+    # references/orders/: item revenue excludes shipping, so it must NOT match order revenue
     item_total = q("SELECT SUM(item_revenue_brl) FROM fact_order_items")
     order_total = q("SELECT SUM(net_revenue_brl) FROM fact_orders")
     assert abs(item_total / order_total - 1) > 0.05, (
@@ -267,7 +267,7 @@ def verify(conn: sqlite3.Connection) -> None:
         f"user/account ratio is {users / accounts:.2f}, doc says ~1.7x"
     )
 
-    # references/marketing.md: attributed revenue is ~20% below total revenue
+    # references/marketing/: attributed revenue is ~20% below total revenue
     total = q(f"SELECT SUM(net_revenue_brl) FROM fact_orders WHERE {HYGIENE}")
     attr = q(
         "SELECT SUM(attributed_revenue_brl) FROM fact_attributed_revenue "
@@ -276,21 +276,21 @@ def verify(conn: sqlite3.Connection) -> None:
     gap = 1 - attr / total
     assert 0.17 <= gap <= 0.23, f"attributed revenue is {gap:.1%} low, doc says ~20%"
 
-    # references/marketing.md: forgetting attribution_model triples every number
+    # references/marketing/: forgetting attribution_model triples every number
     all_models = q("SELECT SUM(attributed_revenue_brl) FROM fact_attributed_revenue")
     assert abs(all_models / attr - 3) < 0.01, (
         "all-models total must be exactly 3x last_touch"
     )
 
-    # references/marketing.md: joining touches to orders fans revenue out
+    # references/marketing/: joining touches to orders fans revenue out
     fanned = q("""SELECT SUM(o.net_revenue_brl) FROM fact_orders o
                   JOIN dim_marketing_touch t ON t.order_id = o.order_id""")
     assert fanned > total * 1.5, "touch join must visibly fan out revenue"
 
-    # references/marketing.md: negative spend rows exist and are real credits
+    # references/marketing/: negative spend rows exist and are real credits
     assert q("SELECT COUNT(*) FROM fact_marketing_spend WHERE spend_usd < 0") > 0
 
-    # references/orders.md: refunded orders carry net_revenue 0 — subtracting refunds
+    # references/orders/: refunded orders carry net_revenue 0 — subtracting refunds
     # again would double-count
     assert (
         q(
@@ -299,7 +299,7 @@ def verify(conn: sqlite3.Connection) -> None:
         == 0
     )
 
-    # references/orders.md: customer_email is restricted, and the free-email flag must
+    # references/orders/: customer_email is restricted, and the free-email flag must
     # agree with the address — the B2B "exclude free-email domains" cut depends on it
     assert (
         q(
@@ -309,7 +309,7 @@ def verify(conn: sqlite3.Connection) -> None:
         == 0
     ), "free-email flag disagrees with address"
 
-    # references/orders.md: dim_customer is per-user, so a naive join fans out B2B orders
+    # references/orders/: dim_customer is per-user, so a naive join fans out B2B orders
     joined = q(f"""SELECT SUM(o.net_revenue_brl) FROM fact_orders o
                    JOIN dim_customer c ON c.customer_id = o.customer_id
                    WHERE {HYGIENE}""")

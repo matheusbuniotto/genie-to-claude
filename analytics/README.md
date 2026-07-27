@@ -5,8 +5,9 @@ in the repo next to the models it describes. The behaviour that reads it ships i
 [`../analytics-marketplace/`](../analytics-marketplace/README.md).
 
 ```
-references/INDEX.md          the router: domain map + terms that must be disambiguated
-references/*.md              one doc per business domain (grain, hygiene filter, gotchas)
+references/INDEX.md               the router: domain map + terms that must be disambiguated
+references/<domain>/SKILL.md      one skill per business domain (grain, hygiene filter, tier-1 metrics)
+references/<domain>/reference.md  that domain's deep detail (key tables, gotchas, patterns)
 evals/*.jsonl                offline evals, graded on the query and the tier, not the number
 evals/results.jsonl          appended by every eval run — telemetry, load it into a table
 evals/NEGATIVE-RESULTS.md    ablations that came back flat, so nobody re-runs them
@@ -30,11 +31,11 @@ the content.
 
 Two domains are documented, which is the minimum that makes a router worth having:
 
-- **`orders.md`** — the skeleton filled in properly: grain, hygiene filter with the cost
+- **`orders/`** — the skeleton filled in properly: grain, hygiene filter with the cost
   of omitting it, cross-table naming drift, gotchas that name their mechanism.
-- **`marketing.md`** — the *routing trigger* case. Attributed revenue is ~20% below total
+- **`marketing/`** — the *routing trigger* case. Attributed revenue is ~20% below total
   revenue by construction, so the doc's job is as much to send "how much revenue did we
-  make" back to `orders.md` as it is to answer its own questions.
+  make" back to `orders/SKILL.md` as it is to answer its own questions.
 
 `INDEX.md` also names the domains that are **not** documented. An undocumented question
 gets "that domain isn't documented", not an answer improvised from a neighbouring table.
@@ -65,10 +66,10 @@ It does two things:
    overstates GMV by 5.1%, answering revenue from `fact_attributed_revenue` understates
    it by 19.7%, counting `user_id` reports 666 customers instead of 400, and a naive
    `dim_customer` join inflates revenue by 66%.
-2. **Asserts the reference docs are true.** Every numeric claim in `references/*.md` is
-   checked against the data. Change a doc's percentage without changing the warehouse and
-   the seed script fails — which is the documentation rot the whole system exists to
-   catch, turned into an assertion.
+2. **Asserts the reference docs are true.** Every numeric claim in a domain's `SKILL.md`
+   or `reference.md` is checked against the data. Change a doc's percentage without
+   changing the warehouse and the seed script fails — which is the documentation rot the
+   whole system exists to catch, turned into an assertion.
 
 The `.db` is generated and gitignored. Rebuild it any time; the row data is identical
 across runs.
@@ -96,8 +97,9 @@ uv run $M examples/orders.genie_space.yml --domain orders_genie \
 uv run $M examples/databricks.yml --space orders_space --domain orders_genie   # identical
 ```
 
-Compare `examples/migrated/references/orders_genie.md` against the hand-finished
-`references/orders.md`: the gap between them is exactly the human work a migration needs.
+Compare `examples/migrated/references/orders_genie/SKILL.md` against the hand-finished
+`references/orders/SKILL.md`: the gap between them is exactly the human work a migration
+needs.
 
 ### Number parity
 
