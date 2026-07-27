@@ -38,6 +38,7 @@ jobs:
           S=analytics-marketplace/analytics-workbench/scripts
           python3 $S/check.py --selftest
           python3 $S/run_evals.py --selftest
+          python3 $S/package_skills.py --selftest
           python3 analytics-marketplace/analytics-workbench/hooks/doc_drift.py --selftest
 
       - name: Genie migrator selftest

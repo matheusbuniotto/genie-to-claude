@@ -122,8 +122,8 @@ analytics-marketplace/             ← the behaviour: install it, don't fork it
     skills/                        reference-doc, eval-loop, analytics-onboarding
     agents/analysis-reviewer       reviews a finished analysis, not just its SQL
     commands/                      migrate-genie, new-domain, check-setup,
-                                   run-evals, review-analysis
-    scripts/                       what the commands run (check, evals, migrator)
+                                   run-evals, review-analysis, package-skills
+    scripts/                       what the commands run (check, evals, migrator, packager)
     hooks/                         flags a model change whose doc wasn't touched
 
 analytics/                         ← the knowledge: this is the part you replace
